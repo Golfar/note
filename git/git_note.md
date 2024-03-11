@@ -15,6 +15,7 @@ git init	#创建仓库
 git status	#查看仓库状态
 git add	#将文件添加到暂存区，可以使用通配符或文件夹来同时添加多个文件
 git commit -m "提交信息"	#提交
+git commit -am "提交信息"	#同时完成暂存和提交
 git log	#查看提交日记
 git log --oneline	#查看简洁版的历史记录
 git ls-files	#查看暂存区内容
@@ -59,3 +60,32 @@ git rm -r *	#递归的删除目录下的所有文件和子目录
 ![image-20240311125555696](./git_note.assets/image-20240311125555696.png)
 
 ![image-20240311131744099](./git_note.assets/image-20240311131744099.png)
+
+![image-20240311135947267](./git_note.assets/image-20240311135947267.png)
+
+```shell
+git branch	#查看分支
+git branch 分支名	#创建新的分支
+git checkout 分支名	#切换分支。需要注意，git checkout可以切换分支，或者回滚文件修改
+git switch 分支名	#切换分支
+
+git merge 分支名	#将该分支合并到当前分支
+git log --graph --oneline --decorate --all	#查看分支图
+#合并完成后，分支仍然存在
+git branch -d	#删除已经完成合并的分支
+git branch -D 分支名	#强制删除分支
+
+git rebase 分支名	#将当前分支 变基 到目标分支
+git tag	#标记版本号
+```
+
+![image-20240311142041016](./git_note.assets/image-20240311142041016.png)
+
+![image-20240311142623468](./git_note.assets/image-20240311142623468.png)
+
+git flow模型
+
+![image-20240311142943876](./git_note.assets/image-20240311142943876.png)
+
+github flow模型
+

@@ -224,5 +224,131 @@ public class Operator{
 
 ### 关系运算符
 
-p69
+![image-20240402155553888](./java基本语法.assets/image-20240402155553888.png)
 
+### 逻辑运算符
+
+![image-20240402155656142](./java基本语法.assets/image-20240402155656142.png)
+
+- &&和&的区别
+
+  &&：如果第一个条件为假，则不判断第二个条件，表达式整体为假
+
+  &：如果第一个条件为假，仍会判断第二个条件
+
+- ^为异或，相同为真，不同为假
+
+### 赋值运算符
+
+复合赋值运算符会进行类型转换
+
+```java
+public class Operator{
+    public static void main(String[] args){
+        byte b = 3;
+        b += 3;//正确，等价于 b = (byte)(b + 3)
+        b = b + 3;//报错，为int
+    }
+}
+```
+
+### 三元运算符
+
+```java
+//条件？表达式1：表达式2
+public class Operator{
+    public static void main(String[] args){
+        int a = 3;
+        int b = 4;
+        int c = a > b ? a : b;//正确
+        int c = a > b ? 1.1 : 3.4;//错误，double赋给int
+    }
+}
+```
+
+### Java标识符的命名规则和规范
+
+- 包名
+
+  多单词组成时，所有字母都小写，如aaa.bbb.ccc
+
+- 类名、接口名
+
+  所有单词的首字母大写，如TankShotGame，驼峰命名
+
+- 变量名，方法名
+
+  第一个单词首字母小写，后续单词的首字母大写tankShotGame
+
+- 常量名
+
+  所有字母大写，多个单词用下划线连接
+
+### Java输入
+
+```java
+import java.util.Scanner;//注意有;
+
+public class Input {
+    public static void main(String[] args){
+        //接受键盘输入
+        Scanner myScanner = new Scanner(System.in);
+        System.out.println("请输入名称");
+        String name = myScanner.next();
+        System.out.println("请输入年龄");
+        int age = myScanner.nextInt();
+        System.out.println(name + age);
+    }
+
+}
+```
+
+### 位运算
+
+```java
+public class Bit {
+    public static void main(String[] args){
+        int a = 1 >> 2;
+        int c = 1 << 2;
+        int a = 3 >>> 2;//逻辑右移，无符号右移，低位溢出，高位补0
+    }
+	//java中没有无符号数，所有数都有符号位
+}
+```
+
+## 控制结构
+
+```java
+switch(){
+    case 1:
+        代码块;
+        break;
+    case 2:
+        ...;
+    default:
+        
+}
+```
+
+### break
+
+```java
+public static void main(String[] args){
+        label1:
+        for(int i = 0; i < 1000; ++i){
+            label2:
+            for(int j = 0; j < 1000; ++j){
+                if (j==50){
+                    System.out.println(i);
+                    System.out.println(j);
+                    break label1;
+
+                }
+            }
+        }
+    }
+```
+
+## 数组
+
+p156

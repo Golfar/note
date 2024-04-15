@@ -349,6 +349,240 @@ public static void main(String[] args){
     }
 ```
 
-## 数组
+## 数组、排序和查找
 
-p156
+### 数组
+
+存放多个**同一类型**的数据。**数组也是一种数据类型，是引用类型**
+
+```java
+public class Array {
+    public static void main(String[] args){
+        double[] hens = {3, 5, 1, 3.4, 50};
+        for(int i = 0; i < hens.length; ++i){
+            //通过.length成员变量遍历数组，这是一个变量，不是方法。
+        }
+    }
+}
+```
+
+通过.length成员变量遍历数组，**这是一个变量，不是方法。**
+
+#### 数组初始化
+
+```java
+public class Array {
+    public static void main(String[] args){
+        double[] hens;
+        double hen[];
+        //上面两种方法等价
+        
+        int a[] = new int[5];//初始化一个大小为5的数组
+        
+        int a[];
+        a = new int[10];
+        //先声明，再初始化数组
+        
+        int a[] = {2, 3, 4, 5, 1};
+        
+        int a[] = new int[]{1,2,3,4};
+    }
+}
+```
+
+#### 数组赋值
+
+```java
+public class Array {
+    public static void main(String[] args){
+        //数组在默认情况下是引用传递，赋值的是地址
+        int arr1[] = {1, 2, 3};
+        int arr2[] = arr1;
+        
+        arr2[1] = 1;
+        System.out.println(arr1[1]);//输出1
+        
+        int arr3 = new int[arr1.length];
+        for(int i = 0; i < arr1.length; ++i){
+            arr3[i] = arr1[i];
+        }//这样完成数值拷贝
+    }
+}
+```
+
+![image-20240415131154639](./java基本语法.assets/image-20240415131154639.png)
+
+#### 数组细节
+
+- 数组默认值为0，布尔为`false`，字符串为`null`。
+- 数组越界会抛出异常，但不会报错
+- 数组是一个引用类型
+
+#### 数组扩容
+
+```java
+public class Array {
+    public static void main(String[] args){
+        int arr[] = {1, 2, 3};
+        int arrNew[] = new int[arr.length + 1];
+        for (int i = 0; i < arr; ++i){
+            arrNew[i] = arr[i];
+        }
+        arrNew[arrNew.length - 1] = 4;
+        arr = arrNew;//原来的数组被jvm回收内存
+    }
+}
+```
+
+### 排序
+
+```java
+import java.util.Scanner;
+//冒泡排序
+public class Hello {
+    public static void main(String[] args){
+        Scanner myScanner = new Scanner(System.in);
+        int[] data = new int[10];
+        for(int i = 0; i < data.length; ++i){
+            data[i] = myScanner.nextInt();
+        }
+        data = sort(data);
+        for(int i = 0 ; i < data.length; ++i){
+            System.out.println(data[i]);
+        }
+    }
+    public static int[] sort(int[] data){
+        for(int i = 0; i < data.length; ++i){
+            for(int j = 0; j < data.length - i - 1; ++j){
+                if(data[j] > data[j + 1]){
+                    int temp = data[j];
+                    data[j] = data[j + 1];
+                    data[j + 1] = temp;
+                }
+            }
+        }
+        return data;
+    }
+
+}
+```
+
+### 二维数组
+
+```java
+public class Array {
+    public static void main(String[] args){
+        int[][] arr = {{1,2,3}, {1,2,3}};
+        int[][] a = new int[2][3];
+        
+        //java中，允许二维数组的每个元素长度不一样
+        int[][] b = new int[3][];
+        for(int i = 0; i < b.length; ++i){
+            b[i] = new int[i + 1];
+        }
+        
+        
+    }
+}
+```
+
+![image-20240415134828705](./java基本语法.assets/image-20240415134828705.png)
+
+# 面向对象方法
+
+## 类与对象
+
+```java
+public class Array {
+    public static void main(String[] args){
+        Cat cat1 = new Cat();
+        cat1.name = "小白";
+        cat1.age = 3;
+        cat2.color = "白色";
+    }
+}
+class Cat{
+    String name;
+    int age;
+    String color;
+}
+```
+
+### 对象在内存中的存在形式
+
+![image-20240415141842904](./java基本语法.assets/image-20240415141842904.png)
+
+基本数据类型放在`堆区域`
+
+![image-20240415142419942](./java基本语法.assets/image-20240415142419942.png)
+
+-  栈：存放基本数据类型，局部变量
+- 堆：存放对象
+- 方法区：常量池（存放常量，如字符串等），类加载信息（属性信息和方法信息。只会在第一次声明类时加载，后续不用加载）
+
+### 方法
+
+```java
+public class Object{
+    public static void main(String[] args){
+        Person p = new Person();
+        p.speak();
+    }
+}
+
+class Person{
+    String name;
+    int age;
+    
+    public void speak(){
+        System.out.println("我是个好人");
+        
+    }
+}
+```
+
+**方法中不能再定义方法**
+
+- 同一个类中调用方法可以直接调用
+
+  ```java
+  class Person{
+      String name;
+      int age;
+      
+      public void speak(){
+          System.out.println("我是个好人");
+          
+      }
+      public void hi(){
+          speak();
+      }
+  }
+  ```
+
+- 跨类要用对象调用
+
+  ```java
+  class Person{
+      String name;
+      int age;
+      
+      public void speak(){
+          System.out.println("我是个好人");
+          
+      }
+      public void hi(){
+          speak();
+      }
+  }
+  class Man{
+      public void main(){
+          speak();//报错
+          Person p = new Person();
+          p.speak();
+      }
+  }
+  ```
+
+P211
+

@@ -86,3 +86,88 @@ name属性一般在表单元素中
 
 部分包含即可。比如`新闻`用LINK_TEXT，则只有完全匹配才能够定位。而PARTIAL_LINK_TEXT则进行部分匹配
 
+### CSS_SELECTOR定位
+
+ ![image-20240419130227485](./selenium_note.assets/image-20240419130227485.png)
+
+- 根据id定位，加一个#
+
+```python
+driver = webdriver.Chrome()
+driver.maximize_window()
+driver.get("https://www.baidu.com")
+driver.find_element(By.CSS_SELECTOR, "#kw").send_keys("selenium")
+driver.find_element(By.CSS_SELECTOR, "#su").click
+```
+
+- 根据class属性值定位，加一个.
+
+  ```python
+  driver = webdriver.Chrome()
+  driver.maximize_window()
+  driver.get("https://www.bilibili.com")
+  driver.find_element(By.CSS_SELECTOR, ".nav-search-input").send_keys("selenium")
+  ```
+
+- 根据name定位
+
+  ```python
+  driver = webdriver.Chrome()
+  driver.maximize_window()
+  driver.get("https://www.baidu.com")
+  driver.find_element(By.CSS_SELECTOR, '[name="wd"]').send_keys("selenium")
+  ```
+
+- 根据标签属性定位
+
+  ```python
+  driver = webdriver.Chrome()
+  driver.maximize_window()
+  driver.get("https://www.baidu.com")
+  driver.find_element(By.CSS_SELECTOR, 'a[href="http://image.baidu.com/"]').click()
+  driver.find_element(By.CSS_SELECTOR, 'a[href*="http://image.baidu.com/"]').click()#模糊查询
+  driver.find_element(By.CSS_SELECTOR, 'a[href^="http://image.baidu"]').click()#开头精准匹配，后面模糊匹配
+  driver.find_element(By.CSS_SELECTOR, 'a[href$="baidu.com/"]').click()#精准匹配尾部
+  
+  #组合定位
+  driver.find_element(By.CSS_SELECTOR, 'input.s_ipt').click()#根据标签和class进行匹配
+  ```
+
+- 根据父子关系定位
+
+  ```python
+  driver = webdriver.Chrome()
+  driver.maximize_window()
+  driver.get("https://www.baidu.com")
+  driver.find_element(By.CSS_SELECTOR, 'div>a').click()#带尖括号，只会定位到儿子
+  driver.find_element(By.CSS_SELECTOR, 'div>a').click()#不带尖括号，会定位到所有子元素
+  driver.find_element(By.CSS_SELECTOR, 'div#s-top-left>a').click()#只定位id为s-top-left的div
+  driver.find_element(By.CSS_SELECTOR, 'div#s-top-left>a:first-child').click()#只选择第一个子节点
+  driver.find_element(By.CSS_SELECTOR, 'div#s-top-left>a:nth-child(7)').click()#定位第n个子节点
+  driver.find_element(By.CSS_SELECTOR, 'div.s-top-left-new.s-isindex-wrap>a:first-child').click()#有多个class用多个.连接
+  ```
+
+### XPATH定位
+
+xpath是一门在xml文档中查找信息的语言
+
+```python
+driver = webdriver.Chrome()
+driver.maximize_window()
+driver.get("https://www.baidu.com")
+driver.find_element(By.CSS_SELECTOR, '/html/body/div/div/div[3]/a').click()#绝对路径定位
+
+driver.find_element(By.CSS_SELECTOR, '//input[@id="kw"]').click()#相对组合定位
+driver.find_element(By.CSS_SELECTOR, '//input[@class="s_ipt"]').click()#相对组合定位
+driver.find_element(By.CSS_SELECTOR, '//input[@class="s_ipt" and @name="wd" and @autocomplete="off"]').click()#相对组合定位
+
+driver.find_element(By.CSS_SELECTOR, '//span[text()="重庆医院"]').click()#文本相等定位
+driver.find_element(By.CSS_SELECTOR, '//span[contains(text(), "重庆医院")]').click()#文本包含定位
+```
+
+## iframe框架切换
+
+iframe是一个内联框架，是在页面里生成一个内部框架。可以嵌套多个html页面。
+
+![image-20240419145438166](./selenium_note.assets/image-20240419145438166.png)
+

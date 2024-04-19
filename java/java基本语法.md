@@ -723,12 +723,563 @@ com.公司名.项目名.业务模块名
 ![image-20240416195417267](./java基本语法.assets/image-20240416195417267.png)
 
 - 私有属性不能在子类直接访问，需要通过`public`方法去访问
+
 - 子类继承了所有的属性和方法，但是`private`修饰的属性和方法无法直接访问
+
 - 当子类创建时，子类必须调用父类的构造器，完成父类的初始化
+
 - 当创建子类对象时，不管使用子类哪个构造器，默认情况下都会调用父类的无参构造器，如果父类没有提供无参构造器，则必须在子类的构造器中用`super`去指定使用父类的哪个构造器去完成对父类的初始化工作。
-- p290
 
+  ```java
+  public class Base{
+      public Base(){}
+      public Base(String s, int a){
+          
+      }
+  }
+  
+  public class Sub extends Base{
+      public Sub(){
+          super();//如果没有显式的使用super，则编译器在编译时会自动在子类构造器中调用父类的无参构造器
+          //如果此时父类没有定义无参构造器，则会报错
+          super("jack", 10);//这个会调用父类的对应构造器
+      }
+  }
+  ```
 
+- `super`在使用时，必须放在构造器的第一行。**也就是说在创建子类时，必须先初始化父类，再初始化子类。**
 
+- `super`和`this`都只能放在构造器的第一行，因此两个方法不能同时存在于同一个构造方法中。`super`是调用父类构造方法，`this`是调用类本身的构造方法。
 
+- `Object`类是所有类的基类
 
+- 对于父类构造方法的调用不限于直接父类
+
+- `java`是单继承机制，每个子类对多只能继承一个父类。
+
+#### 子类的创建过程
+
+```java
+public class Extend {
+    public static void main(String[] args) {
+        Son son = new Son();
+        System.out.println(son.name);//会输出儿子
+    }
+}
+
+class Grand{
+    String name = "爷爷";
+    String hobby = "旅游";
+}
+
+class Father extends Grand{
+    String name = "爸爸";
+    int age = 30;
+
+}
+
+class Son extends Father{
+    String name = "儿子";
+
+}
+```
+
+new Son时，会在方法区先加载`Object`，然后加载`Grand`，然后是`Father`，最后才是`Son`的类信息。
+
+加载之后，会在堆中分配一个地址空间，此时先给`Grand`类中的两个变量分配空间。*由于这两个变量是`String`，为常量，因此堆中保存地址，内容存放在方法区中的常量池*。然后再给`Father`类中的两个变量分配空间。最后会给`Son`的属性分配空间。
+
+此时用`son`访问属性时，按照查找关系返回信息。
+
+1. 首先查看子类是否有给属性
+2. 子类有直接访问
+3. 子类没有则向上找父类
+4. 父类有且有权访问，则直接访问
+5. 父类有但无权访问，则子类无法访问这个属性。此时不会再继续找父类的父类
+6. 父类如果没有，则继续向上查找
+
+![image-20240417130916427](./java基本语法.assets/image-20240417130916427.png)
+
+#### super
+
+`super`代表父类的引用，用于访问父类的属性、方法、构造器
+
+- 访问父类的属性，但不能访问私有属性、方法
+
+  ```java
+  super.属性名;
+  super.方法名();
+  ```
+
+- 访问父类构造器时，必须在子类构造器中的第一句使用
+
+- 当父类中的属性与子类重名时，则必须使用`super`才能访问。如果没有重名，则`this`和`super`访问效果相同。
+
+- `super`和`this`的区别在于`super`不会在本类中查找，直接查找父类。**如果父类中没有也会向上查找**
+
+#### 重写
+
+子类有一个方法和父类的某个方法的名称、返回类型、参数列表一致，那么我们就说子类的这个方法覆盖了父类的方法。
+
+- 子类的方法的**参数、方法名称**要与父类放的完全一样
+
+- 子类方法的**返回类型**要和父类方法的返回类型一样，或者是 **父类放回类型的子类**，比如父类返回Object，子类返回String
+
+- 如果参数、方法名称相同，但返回类型不符合第二条，则会报错。
+
+- 子类方法不能缩小父类方法的访问权限。
+
+  比如父类方法为`public`，而子类是`proteced`，则会报错
+
+  父类方法为`private`，而子类方法问`public`则可以
+
+**重载和重写的区别**
+
+![image-20240417135417298](./java基本语法.assets/image-20240417135417298.png)
+
+##### 重写举例
+
+```java
+public class Person {
+    String name;
+    int age;
+    public Person(){}
+    public Person(String name, int age){
+        this.name = name;
+        this.age = age;
+    }
+    public void say(){
+        System.out.println("name=" + age + "\tage=" + age);
+    }
+}
+
+public class Student extends Person{
+    int id;
+    int score;
+
+    public Student(){}
+    public Student(String name, int age, int id, int score){
+        super(name, age);
+        this.id = id;
+        this.score = score;
+    }
+
+    @Override
+    public void say() {
+        super.say();
+        System.out.println("id=" + id + "\tscore=" + score);
+    }
+}
+```
+
+### 多态
+
+方法和对象具有多种形态。多态是建立在封装和继承的基础上的
+
+#### 方法多态
+
+重载、重写
+
+#### 对象多态
+
+- 一个对象的编译类型和运行类型可以不一致
+
+  ```java
+  Animal animal = new Dog();
+  animal = new Cat();
+  ```
+
+- 编译类型在定义对象时就确定了，不能改变
+
+- 运行类型可以改变
+
+  *指针类型不能变，但指针指的内容可以改变*
+
+  ```java
+  public class Animal {
+      public void cry(){
+          System.out.println("动物在哭");
+      }
+  }
+  
+  public class Cat extends Animal{
+      @Override
+      public void cry(){
+          System.out.println("猫猫在叫");
+      }
+  }
+  
+  public class Dog extends Animal{
+      @Override
+      public void cry(){
+          System.out.println("狗再叫");
+      }
+  }
+  
+  public class Run {
+      public static void main(String[] args) {
+          Animal animal = new Dog();
+          animal.cry();//输出狗再叫
+          
+          animal = new Cat();
+          animal.cry();//输出猫猫再叫
+      }
+  }
+  ```
+
+- 多态的前提是两个类存在继承关系
+
+- 父类的引用指向了子类的对象
+
+- 可以调用父类中的所有成员(遵守访问权限)
+
+- 不能调用子类中的特有成员，**比如子类有一个父类没有的方法，则不能调用这个方法**
+
+- 重写方法的运行效果看子类的具体实现
+
+- 能够强制类型转换
+
+  - 只能强制转换父类的引用，不能强制转换父类的对象
+
+    就是说对象的类型无法强制转换，而指针的类型可以转换
+
+  - 要求父类的引用必须指向的是当前目标类型的对象
+
+  - 向下转型后，可以调用子类类型的所有成员
+
+  ```java
+  public class Animal {
+      public void cry(){
+          System.out.println("动物在哭");
+      }
+  }
+  
+  public class Cat extends Animal{
+      @Override
+      public void cry(){
+          System.out.println("猫猫在叫");
+      }
+  
+      public void catchMouse(){
+          System.out.println("这只猫抓到了一只老鼠");
+      }
+  }
+  
+  public class Run {
+      public static void main(String[] args) {
+          Animal animal = new Cat();
+          animal.cry();//输出猫在叫
+  
+          Cat cat = (Cat)animal;
+          cat.catchMouse();//输出这只猫抓到了一只老鼠
+          
+          Dog dog = (Dog)aniaml;//会抛出异常，无法进行强制类型转化
+      }
+  }
+  ```
+
+ 
+
+```java
+public class Base {
+    int count = 10;
+}
+
+public class Sub extends Base{
+    int count = 20;
+}
+
+public class Run {
+    public static void main(String[] args) {
+        Base base = new Sub();
+        System.out.println(base.count);//输出10
+        
+        Sub sub = new Sub()
+        System.out.println(sub instanceof Sub);//true
+        System.out.println(sub instanceof Base);//true
+        System.out.println(base instanceof Base);//true
+        System.out.println(base instanceof sub);//true
+    }
+}
+```
+
+`instancecof`关键字用于判断一个对象指针所指向的内容是否为该类型或该类型的子类型。**如果两个类型之间不存在偏序关系，会直接报错**
+
+#### 动态绑定
+
+当调用对象方法的时候，该方法会和该对象的内存地址/运行类型绑定
+
+当调用对象属性时，没有动态绑定机制，哪里声明，哪里使用
+
+```Java
+public class A{
+    int i = 10;
+    public sum(){
+        return getI() + 10;
+    }
+    public sum1(){
+        return i + 20;
+    }
+    public getI(){
+        return i;
+    }
+}
+
+public class B{
+    int i = 20;
+   	public getI(){
+        return i;
+    }
+}
+
+public class Run {
+    public static void main(String[] args) {
+        A a = new B();
+        System.out.println(a.sum());
+        /*
+        *首先，类B中没有sum方法，寻找父类A。
+        *父类A中找到sum方法，但是父类A调用了getI方法，此时父类存在一个getI方法，子类存在一个getI方法
+        *动态绑定按内存类型绑定方法，内存类型为B，会调用B类的getI方法，返回20，最终结果为40
+        */
+        
+        
+        System.out.println(a.sum1());
+        /*
+        *首先，类B中没有sum1方法，寻找父类A。
+        *父类A中找到sum1方法，此时sum1方法中直接使用了变量i，对于属性，在哪里声明，就使用哪里的变量，因此这个i会使用A类的i
+        *最终返回结果30
+        */
+    }
+}
+```
+
+#### 应用
+
+##### 多态数组
+
+数组的定义类型为父类数组，但里面保存的实际元素类型为子类类型
+
+```java
+public class Person {
+    private String name;
+    private int age;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    public Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    public String say(){
+        return "名字是" + name + "年龄是" + age;
+    }
+}
+
+public class Student extends Person{
+    private double score;
+
+    public Student(String name, int age, double score) {
+        super(name, age);
+        this.score = score;
+    }
+
+    public double getScore() {
+        return score;
+    }
+
+    public void setScore(double score) {
+        this.score = score;
+    }
+
+    @Override
+    public String say() {
+        return super.say() + "成绩是" + score;
+    }
+    
+    public void study(){
+        System.out.println(super.getName() + "正在学习");
+    }
+}
+
+public class Teacher extends Person{
+    private double salary;
+
+    public Teacher(String name, int age, double salary) {
+        super(name, age);
+        this.salary = salary;
+    }
+
+    public double getSalary() {
+        return salary;
+    }
+
+    public void setSalary(double salary) {
+        this.salary = salary;
+    }
+
+    @Override
+    public String say() {
+        return super.say() + "工资是" + salary;
+    }
+    
+    public void teach(){
+        System.out.println(super.getName() + "正在教课");
+    }
+}
+
+public class Run {
+    public static void main(String[] args) {
+        Person[] persons = new Person[5];
+        persons[0] = new Person("jack", 19);
+        persons[1] = new Student("lucy", 15, 89.5);
+        persons[2] = new Student("jason", 16, 99.5);
+        persons[3] = new Teacher("nancy", 35, 1000);
+        persons[4] = new Teacher("chary", 49, 5000.31);
+
+        for (Person person : persons) {
+            System.out.println(person.say());//动态绑定机制
+            System.out.println(person.say());//动态绑定机制
+            //名字是jack年龄是19
+            //名字是lucy年龄是15成绩是89.5
+            //lucy正在学习
+            //名字是jason年龄是16成绩是99.5
+            //jason正在学习
+            //名字是nancy年龄是35工资是1000.0
+            //nancy正在教课
+            //名字是chary年龄是49工资是5000.31
+            //chary正在教课
+
+            if (person instanceof Student) {
+                Student stu = (Student) person;
+                stu.study();
+            } else if (person instanceof Teacher) {
+                Teacher teacher = (Teacher) person;
+                teacher.teach();
+            }
+        }
+
+    }
+}
+```
+
+##### 多态参数
+
+```java
+public class Employee {
+    private String name;
+    private double salary;
+
+    public Employee(String name, double salary) {
+        this.name = name;
+        this.salary = salary;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public double getSalary() {
+        return salary;
+    }
+
+    public void setSalary(double salary) {
+        this.salary = salary;
+    }
+
+    public double getAnnual(){
+        return salary * 12;
+    }
+}
+
+public class ComEmplyee extends Employee{
+    public ComEmplyee(String name, double salary) {
+        super(name, salary);
+    }
+
+    public void work(){
+        System.out.println(getName() + "正在工作");
+    }
+}
+
+public class Manager extends Employee{
+    private double bonus;
+
+    public Manager(String name, double salary, double bonus) {
+        super(name, salary);
+        this.bonus = bonus;
+    }
+
+    public double getBonus() {
+        return bonus;
+    }
+
+    public void setBonus(double bonus) {
+        this.bonus = bonus;
+    }
+
+    public void manage(){
+        System.out.println(getName() + "正在管理");
+    }
+
+    @Override
+    public double getAnnual() {
+        return super.getAnnual() + bonus;
+    }
+}
+
+public class Run {
+    public static void main(String[] args) {
+        Employee[] employees = new Employee[3];
+        employees[0] = new ComEmplyee("jack", 4000);
+        employees[1] = new ComEmplyee("jason", 17000);
+        employees[2] = new Manager("nancy", 30000, 90000);
+        Run run = new Run();//实例化一个当前类，就可以不用在其他的方法中加static修饰
+
+        for (Employee employee:employees) {
+            run.showEmpAnnual(employee);
+            run.testWork(employee);
+        }
+        
+        //48000.0
+        //jack正在工作
+        //204000.0
+        //jason正在工作
+        //450000.0
+        //nancy正在管理
+    }
+
+    public void showEmpAnnual(Employee employee){
+        System.out.println(employee.getAnnual());
+    }
+
+    public void testWork(Employee employee){
+        if(employee instanceof ComEmplyee){
+            ((ComEmplyee) employee).work();
+        } else if (employee instanceof Manager) {
+            ((Manager) employee).manage();
+        }
+    }
+}
+```
+
+## Object类详解
+
+p319

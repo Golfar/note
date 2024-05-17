@@ -27,6 +27,8 @@ public class Plus{
 
 
 
+# 基本语法
+
 ## 数据类型
 
 Java数据类型主要分为两大类，分别是**基础数据类型和引用数据类型**
@@ -1282,4 +1284,1972 @@ public class Run {
 
 ## Object类详解
 
-p319
+![image-20240422140520107](./java基本语法.assets/image-20240422140520107.png)
+
+### equals
+
+**`==`和`equals`的区别**
+
+`==`是比较运算符，既可以判断基本类型，也可以判断引用类型。对于基本类型，判断值是否相等 ；对于引用类型，判断地址是否相等，即判断是否为同一个对象
+
+`equals`只能用于判断引用类型。默认判断的是引用类型的地址是否相等；子类往往重写改方法，用于判断是否值相等。
+
+```java
+//Object类中equals方法
+public boolean equals(Object obj) {
+        return (this == obj);
+}//仅判断是否地址相同
+
+//Integer中的equals方法
+public boolean equals(Object obj) {
+    if (obj instanceof Integer) {
+        return value == ((Integer)obj).intValue();
+    }
+    return false;
+}//判断值是否相同
+```
+
+```java
+public class Run {
+    public static void main(String[] args) {
+        String lol = new String("lol");
+        String lol1 = new String("lol");
+        System.out.println(lol == lol1);//false
+        System.out.println(lol.equals(lol1));//true
+        
+        int i = 65;
+        float f = 65.0;
+        char ch1 = 'A';
+        
+        System.out.println(i == ch1);//true
+        System.out.println(i == f);//true
+    }
+}
+```
+
+### hashCode
+
+- 提高具有哈希结构的容器的效率
+- 两个引用，如果指向的是同一个对象，则哈希值肯定是一样的
+- 两个引用，如果指向的是不同的对象，则哈希值大概率是不一样的
+- 哈希值主要根据地址来计算，但不能完全将哈希值等价于地址
+
+### toString
+
+默认返回：全类名 + @ + 哈希值的十六进制。
+
+子类往往重写该方法，用于返回对象的属性信息
+
+当输出一个对象时，会默认调用他的toStirng方法
+
+```java
+public String toString() {
+    return getClass().getName() + "@" + Integer.toHexString(hashCode());
+}
+```
+
+```java
+//默认不重写
+public class Run {
+    public static void main(String[] args) {
+        Person jack = new Person("jack", 10);
+        System.out.println(jack.toString());//com.learn.tostring.Person@1b6d3586
+        //重写后输出Person{name='jack', age=10}
+        System.out.println(jack);//直接输出对象时，会默认调用toString
+    }
+}
+
+class Person{
+    private String name;
+    private int age;
+
+    public Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+    
+    @Override
+    public String toString() {
+        return "Person{" +
+                "name='" + name + '\'' +
+                ", age=" + age +
+                '}';
+    }
+}
+```
+
+### finalize
+
+- 当对象被回收时，系统会自动调用该对象的`finalize`方法，子类可以重写该方法，做一些资源释放的操作
+- 当某个对象没有任何引用时，则`jvm`会认为这个对象是一个垃圾对象，就会使用垃圾回收机制来销毁该对象
+- 垃圾回收机制的调用，是由系统来决定的。也可以通过`System.gc()`来主动调用
+- 不是计数为0时立刻回收，jvm有自己的GC算法
+
+## 类变量和类方法(静态变量和静态方法)
+
+在内存中，每个对象存放的是静态变量的地址。它被同一个类的所有对象共享，在类加载时就生成了。
+
+```java
+public class Run {
+    public static void main(String[] args) {
+        System.out.println(A.name);//myBlog
+        //类变量是在类加载时就生成了，即使没有对象实例也可以访问
+    }
+}
+
+class A{
+    public static String name = "myBlog";
+}
+```
+
+如果希望不创建实例，也可以调用方法(即将这个方法当作工具使用)。这是将其定义为静态方法就比较方便
+
+类方法不能使用和对象有关的关键字，比如`this`,`super`等。
+
+类方法中只能访问静态变量或静态方法。*因为静态方法在调用时没有实例，所以没有具体对象来进行普通方法的调用*
+
+## main
+
+- main方法是jvm调用的
+- jvm在调用main方法时，没必要创建对象，因此该方法是static
+
+## 代码块
+
+代码块，又称初始化块，属于类中的成员，类似于方法，将逻辑语句封装在方法体中，通过{}包围起来
+
+但和方法不同，代码块没有方法名，没有返回值，没有参数，只有方法体。在加载类时，或创建对象时隐式调用
+
+```java
+class Movie{
+    [static]{
+        System.out.println("电影正在放映");
+        System.out.println("电影放映结束");
+    };
+}
+```
+
+代码块的调用顺序优先于构造函数
+
+- static代码块随着类的加载而执行，并且只会执行一次
+- 类什么时候会被加载
+  - new
+  - 创建子类对象时，父类会被加载
+  - 使用类的静态成员时，类会被加载
+- 普通代码块，在创建对象实例时，会被隐式调用，创建一次就调用一次
+- 只是用类的静态成员时，普通代码块不会执行
+
+在创建一个对象时，在一个类 调用顺序是
+
+1. 调用静态代码块和静态属性初始化
+
+   静态代码块和静态属性的优先级一样，按它们定义的顺序调用
+
+2. 调用普通代码块和普通属性的初始化
+
+3. 调用构造方法
+
+构造器的最前面其实隐含了super()和调用普通代码块；而静态代码块和静态属性初始化，在类加载时就已经完成了，因此是先于构造器的。
+
+创建一个子类对象时的顺序
+
+1. 父类的静态代码块和静态属性初始化
+2. 子类的静态代码块和静态属性初始化
+3. 父类的普通代码块和普通属性初始化
+4. 父类的构造函数
+5. 子类的普通代码块和普通属性初始化
+6. 子类的构造函数
+
+```java
+public class Base {
+    private static int age = getAge();
+
+    static{
+        System.out.println("这是Base类的静态代码块初始化");
+    }
+
+    {
+        System.out.println("这是Base类的代码块初始化");
+    }
+
+    public static int getAge(){
+        System.out.println("这是Base类的静态属性初始化");
+        return 1;
+    }
+
+    public Base() {
+        System.out.println("这是Base类的构造函数");
+    }
+}
+
+public class Father extends Base{
+
+    static{
+        System.out.println("这是Father类的静态代码块初始化");
+    }
+    private static int age = getAge();
+
+
+    {
+        System.out.println("这是Father类的代码块初始化");
+    }
+
+    public static int getAge(){
+        System.out.println("这是Father类的静态属性初始化");
+        return 1;
+    }
+
+    public Father() {
+        System.out.println("这是Father类的构造函数");
+    }
+}
+
+public class Son extends Father{
+
+    private static int age = getAge();
+
+    static{
+        System.out.println("这是Son类的静态代码块初始化");
+    }
+
+    {
+        System.out.println("这是Son类的代码块初始化");
+    }
+
+    public static int getAge(){
+        System.out.println("这是Son类的静态属性初始化");
+        return 1;
+    }
+
+    public Son() {
+        System.out.println("这是Son类的构造函数");
+    }
+}
+
+public class Run {
+    public static void main(String[] args) {
+        Son son = new Son();
+        //这是Base类的静态属性初始化
+        //这是Base类的静态代码块初始化
+        //这是Father类的静态代码块初始化
+        //这是Father类的静态属性初始化
+        //这是Son类的静态属性初始化
+        //这是Son类的静态代码块初始化
+        //这是Base类的代码块初始化
+        //这是Base类的构造函数
+        //这是Father类的代码块初始化
+        //这是Father类的构造函数
+        //这是Son类的代码块初始化
+        //这是Son类的构造函数
+    }
+}
+```
+
+## 单例模式
+
+1. 构造器私有化
+2. 类的内部创建对象
+3. 向外暴露一个静态的公共方法
+
+### 饿汉单例
+
+```java
+public class Hungery {
+    private String name;
+    private static Hungery hun = new Hungery("饿汉");
+    private Hungery(String name){
+        this.name = name;
+    }
+
+    public static Hungery getInstance() {
+        return hun;
+    }
+}
+```
+
+### 懒汉单例
+
+```java
+public class Lazy {
+
+    private String name;
+    private static Lazy lazy;
+    private Lazy(String name){
+        this.name = name;
+    }
+
+    public static Lazy getInstance() {
+        if (lazy == null) {
+            lazy = new Lazy("懒汉");
+        }
+        return lazy;
+    }
+}
+```
+
+- 为什么`getInstance()`方法要用`static`修饰
+
+  因为要保证单例，如果不用`static`修饰，就要先创建一个对象才能调用`getInstance()`，这和单例模式的初衷不符
+
+- 为什么对象实例要用`static`修饰
+
+  因为`getInstance()`方法为静态方法，静态方法中只能调用静态成员
+
+- 饿汉单例不存在线程安全问题，懒汉单例存在线程安全问题
+
+## final
+
+final可以修饰类、属性、方法和局部变量
+
+- 当不希望类被继承时，用final修饰类
+- 当不希望父类的某个方法被子类重写，可以用final修饰该方法
+- 当不希望类的某个属性的值被修改，就用final修饰这个属性。*常量*
+
+使用细节
+
+- final修饰的变量为常量，该属性必须初始化，初始化的位置可以为
+  1. 定义时初始化
+  2. 在构造器中初始化
+  3. 在代码块中初始化
+- 如果final修饰的属性是静态的，那么只能在
+  1. 定义时初始化
+  2. 静态代码块中初始化
+- final不能修饰构造器
+- final和static一起使用时，仅使用final static变量并不会导致类的加载
+- final修饰引用变量时，是该变量不能变，而不是变量指向的内容不能变
+
+## 抽象类
+
+当父类的某些方法需要声明，但是又不确定如何实现时，可以将其声明为抽象方法，那么这个类就是抽象类。抽象方法用`abstract`修饰。
+
+当类中有一个方法是抽象方法时，要将该类也用`abstract`修饰。
+
+*抽象方法没有方法体*
+
+**使用细节**
+
+- 抽象类不能实例化
+- 抽象类不一定要包含抽象方法，但含有抽象方法的类必须是抽象类
+-  抽象类还是类，它可以有任意的成员，比如非抽象方法，构造器，静态属性等
+- 如果一个方法继承了抽象类，则它必须实现这个抽象类的所有抽象方法，除非它也是一个抽象类
+- 抽象方法不能使用`private`，`fianl`，`static`修饰，因为这三个关键字修饰的方法都不允许被重写。
+
+## 模板模式
+
+需求：
+
+- 有多个类，完成不同的任务
+- 要求统计各自完成任务的时间
+
+```java
+public class abstract Template{
+    public abstract void job();
+    public void cul(){
+        ...;
+        ...;
+        ...;
+        job();
+        ...;
+        ...;
+    }
+}
+
+public class Employee{
+    @Override
+    public void job(){
+        ...;
+    }
+}
+
+public class Manager{
+    @Override
+    public void job(){
+        ...;
+    }
+}
+```
+
+## 接口
+
+```java
+public interface Usb {
+    //规定接口相关方法
+    public void start();
+    public void stop();
+}
+
+public class Camera implements Usb {
+    @Override
+    public void start() {
+        System.out.println("相机开始工作");
+    }
+
+    @Override
+    public void stop() {
+        System.out.println("相机结束工作");
+    }
+}
+
+public class Phone implements Usb {
+    @Override
+    public void start() {
+        System.out.println("手机开始工作");
+    }
+
+    @Override
+    public void stop() {
+        System.out.println("手机停止工作");
+    }
+}
+
+public class Computer {
+    public void work(Usb usb){
+        usb.start();
+        usb.stop();
+    }
+}
+
+public class Run {
+    public static void main(String[] args) {
+        Camera camera = new Camera();
+        Phone phone = new Phone();
+        Computer computer = new Computer();
+        computer.work(camera);
+        computer.work(phone);
+        //相机开始工作
+        //相机结束工作
+        //手机开始工作
+        //手机停止工作
+    }
+}
+```
+
+接口就是给出一些没有实现的方法，封装在一起，到某个类要使用的时候，再根据具体情况把这些方法写出来
+
+```java
+interface 接口名{
+    //属性
+    //方法
+}
+
+class 类名 implements 接口名1,接口名2{
+    //自己的属性
+    //自己的方法
+    //必须实现接口的全部方法
+}
+```
+
+**使用细节**
+
+- 接口不能被实例化
+- 接口中的所有方法都是`public`，接口中的抽象方法可以不用`abstract`修饰
+- 一个普通类实现接口，就必须实现接口的全部方法
+- 抽象类实现接口可以不用实现接口方法
+- 一个类可以同时实现多个接口。*不同于继承，继承只能单继承*
+- 接口中的属性只能是`public static final`修饰。
+- 接口不能继承类，但可以继承多个别的接口
+- 接口的修饰符只能是public和默认
+
+### 接口和继承
+
+- 实现是对java单继承机制的一种补充
+
+  当子类继承了父类时，就自动的拥有了父类的功能
+
+  当子类需要扩展功能时，可以通过实现接口的方式来扩展
+
+- 继承的价值主要在于：解决代码的复用性和可维护性
+
+  接口的价值主要在于：设计好各种规范，让其它类去实现这种方法。即更加的灵活
+
+- 接口在一定程度上实现了代码解耦
+
+### 接口的多态
+
+- 参数多态，当参数为接口时，可以接收所有实现了这个接口的对象
+- 接口类型的指针可以指向实现了这个接口的对象实例
+- 同时也可以进行向上向下转型来调用子类的特有方法
+- 多态传递：接口A继承了接口B，类C实现了接口A，那么接口B的指针也能指向类C的实例
+
+## 内部类
+
+一个类的内部又完整的嵌套了另一个类的结构。被嵌套的类称为内部类。
+
+内部类的最大的特点是可以直接访问私有属性，并且可以体现类与类之间的包含关系
+
+```java
+class Outer{//外部类
+    class Inner{//内部类
+        
+    }
+}
+```
+
+**内部类的分类**
+
+- 定义在外部类的局部位置(比如方法内)
+  - 局部内部类(有类名)
+  - 匿名内部类(没有类名)
+- 定义在外部类的成员位置上
+  - 成员内部类(没有static修饰)
+  - 静态内部类(使用static修饰)
+
+### 局部内部类
+
+- 可以直接访问外部类的所有成员，包括私有成员
+- 不能添加修饰符，因为它的地位就是一个局部变量，而局部变量不能使用修饰符修饰
+  但是可以使用final修饰，因为局部变量本身就可以使用final
+- 作用域：仅在定义它的方法或代码块中
+- 局部内部类访问外部类时：直接访问
+- 外部类访问局部内部类时，在作用域中创建对象再访问
+- 如果外部类和局部内部类重名时，默认遵循就近原则，如果想访问外部类的成员，则可以使用`外部类名.this.成员`
+
+```java
+public class Outer {
+    private int n1 = 100;
+
+    public int n2 = 1000;
+    private void m2(){}
+
+    public void m1(){
+        class Inner{//本质仍然是一个类
+            public int n2 = 10000;
+            public void f1(){//直接访问外部类的全部私有成员
+                System.out.println("n1=" + n1);//Outer的100
+                m2();
+                System.out.println("n2=" + n2);//Inner的10000
+                System.out.println("n2=" + Outer.this.n2);//Outer的1000
+            }
+        }
+
+        final class Inner01 extends Inner{}//局部内部类可以使用final修饰，此时Inner01不能再被继承
+
+        Inner inner = new Inner();
+        inner.f1();//创建内部类的实例，再调用方法
+        System.out.println("n2=" + n2);//Outer的1000
+    }
+}
+
+public class Run {
+    public static void main(String[] args) {
+        Outer outer = new Outer();
+        outer.m1();
+    }
+}
+
+```
+
+### 匿名内部类
+
+- 本质是类
+- 内部类
+- 没有名字
+- 同时还是一个对象
+
+```java
+new 类或接口名(参数列表){
+    类体
+};
+```
+
+```java
+public class Outer {
+    private int n1 = 100;
+    public void method(){
+        //基于接口的匿名内部类
+        //需求：想使用接口A的cry方法。但是只用很少次甚至一次这个方法
+        //此时如果专门写一个类去实现接口方法就会很冗余
+        //采用匿名内部类解决
+
+        //基于接口的匿名内部类
+        A tiger = new A(){
+            @Override
+            public void cry() {
+                System.out.println("老虎在叫");
+            }
+        };//此时tiger的编译类型为A，运行类型为一个新的类，这个类实现了接口A
+        System.out.println("tiger的类型" + tiger.getClass());//在底层实现上有类名，但在代码层面不需要
+        //class com.learn.anonyinner.Outer$1
+        tiger.cry();//老虎在叫
+
+
+        //基于类的匿名内部类
+        //本质就是创建了一个继承了Father类的子类，参数列表会传递给Father类的构造器
+        Father father = new Father("jack"){
+            @Override
+            public void test() {
+                System.out.println("匿名内部类重写了test方法");
+            }
+        };
+        System.out.println("father的类型为" + father.getClass());//class com.learn.anonyinner.Outer$2
+        father.test();
+    }
+}
+
+interface A{
+    public void cry();
+}
+
+class Father{
+    public Father(String name){
+        super();
+    }
+    public void test(){
+
+    }
+}
+```
+
+匿名内部类既是一个类的声明，同时也初始化了一个这个类的对象
+
+最多的使用场景为当作实参作为参数传递
+
+```java
+public interface Bell {
+    void ring();
+}
+
+public class CellPhone{
+    public void alarmClock(Bell bell){
+        bell.ring();
+    }
+}
+
+public class Run {
+    public static void main(String[] args) {
+        CellPhone cellPhone = new CellPhone();
+        cellPhone.alarmClock(new Bell() {
+            @Override
+            public void ring() {
+                System.out.println("懒猪起床了");
+            }
+        });
+        cellPhone.alarmClock(new Bell() {
+            @Override
+            public void ring() {
+                System.out.println("上课了");
+            }
+        });
+    }
+}
+```
+
+### 成员内部类
+
+- 成员内部类可以直接访问外部类的全部成员，包括私有成员
+- 可以添加任意的访问修饰符
+- 外部类访问内部类则需要创建给类的对象，然后调用
+- 外部其他类使用成员内部类有四种方式
+- 外部类与内部类重名与上面相同
+
+```java
+public class Outer {
+    private int n1 = 100;
+    public String name = "张三";
+    class Inner{
+        public void say(){
+            System.out.println("n1=" + n1 + "name=" + name);
+        }
+    }
+}
+
+public class Run {
+    Outer outer = new Outer();
+    Outer.Inner inner = outer.new Inner();//外部其他类调用成员内部类
+    Outer.Inner inner2 = outer.gerInner();//外部其他类调用成员内部类
+    Outer.Inner inner3 = new Outer().new Inner();//外部其他类调用成员内部类
+    Outer.Inner inner4 = new Outer().gerInner();//外部其他类调用成员内部类
+}
+```
+
+### 静态内部类
+
+- 可以直接访问外部类的所有静态成员
+- 可以添加任意的访问修饰符
+- 外部类访问内部类时同上
+- 外部其他类访问内部类时也同上
+
+```java
+public class Outer {
+    private int n1 = 100;
+    public static String name = "张三";
+    public static class Inner{
+         public void say(){
+             System.out.println("name=" + name);
+         }
+    }
+}
+
+public class Run {
+    public static void main(String[] args) {
+        Outer.Inner inner = new Outer.Inner();//静态内部类可以通过类名直接访问，不需要先创建外部类，再访问内部类
+        inner.say();
+    }
+}
+```
+
+# 面向对象应用
+
+## 枚举类
+
+枚举是一组常量的集合
+
+### 自定义枚举
+
+```java
+public class Season {
+    private String name;
+    
+    public static final Season SPRING = new Season("春天");
+    public static final Season SUMMER = new Season("夏天");
+    public static final Season AUTUMN = new Season("秋天");
+    public static final Season WINTER = new Season("冬天");
+    
+    //构造器私有化，防止直接new
+    //去掉set方法，防止属性被修改
+    //在Season内部创建内部类
+    //提供final修饰，防止被继承
+    private Season(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+    
+}
+```
+
+### Emun枚举
+
+```java
+public enum Day {
+
+    //使用enum字段替代class字段
+    //public static final Day MONDAY = new Day("周一")直接使用
+    //多个常量对象使用“，”间隔
+    //定义的常量对象放在最前面
+
+    MONDAY("周一"),
+    THUESDAT("周二"),
+    WENSEDAY("周三"),
+    FRIDAY;
+    private String day;
+
+    Day(String day) {
+        this.day = day;
+    }
+    Day(){
+        
+    }
+}
+```
+
+- 使用`enum`关键字修饰的类会自动继承`Enum`类
+
+- `WENSEDAY("周三");`必须知道调用的是哪个构造器
+
+- 使用无参构造器时，可以直接不加参数列表，即`FRIDAY`
+
+- Emun父类的toString方法会直接打印类名
+
+- ```java
+  public class Run {
+      public static void main(String[] args) {
+          Day day = Day.THUESDAY;
+  
+          //输出枚举对象名字
+          System.out.println(day.name());
+  
+          //输出枚举对象的索引，从0开始
+          System.out.println(day.ordinal());
+  
+          //values方法为编译器自动生成的枚举类方法，其返回值为所有对象的数组
+          Day[] week = Day.values();
+          for (Day days: week) {
+              System.out.println(days.name());
+          }
+  
+          //将字符串转换成枚举对象，没有则会异常
+          Day monday = Day.valueOf("Monday");
+  
+          //比较两个枚举常量的编号
+          System.out.println(day.compareTo(monday));
+      }
+  }
+  ```
+
+- 使用emun关键字后就不能再继承其他类了，因为他会隐式继承Emun类。而java是单继承机制
+
+- 枚举类可以和普通类一样实现接口
+
+## 注解
+
+注解也被称为元数据，用于修饰解释 包、类、方法、属性、构造器、局部变量等数据信息
+
+注解不影响程序逻辑，但注解可以被编译或运行，相当于嵌入到代码中的补充信息
+
+一般是用来配置应用程序的任何切面，代替繁冗代码和xml配置等
+
+**三个基本注解**
+
+- `@Override`限定于修饰方法，表示重写父类方法
+- `@Deprecated`用于表示某个程序元素(类、方法)已经过时
+- `@SuppressWarning`抑制编译器警告
+
+注解本质是@interface类型，他并不是接口，而是表明他是一个注解类
+
+### Override
+
+- 从编译层面验证重写，如果父类没有这个被重写的方法就会报错
+- 即使不写`@Override`注解，也仍然会构成方法的重写
+- `@Override`只能修饰方法，而不能修饰类、包、属性等
+-  `@Override`源码为`@Target(ElementType.METHOD)`，说明只能修饰方法
+- `@Target`注解说明其能够修饰的对象；`@Target`是修饰注解的注解，成为元注解
+
+### Deprecated
+
+- 用于表示某个程序元素已经过时
+- 可以修饰方法、类、字段、包、参数等等元素
+
+### SuppressWarning
+
+### 元注解
+
+- `@Retention`指定注解的作用范围，三种SOURCE，CLASS，RUNTIME
+- `@Target`指定注解可以在哪些地方使用
+- `@Documented`指定该注解是否会在javadc中体现
+- `@Inherited`子类会继承父类的注解
+
+# 异常
+
+如果程序员认为一段代码可能出现异常，可以使用try-catch异常处理机制来解决，从而保证程序的鲁棒性
+
+- Error：Java虚拟机无法解决的严重错误，如：JVM系统内部错误，爆栈爆内存等。Error是严重错误，程序会崩溃
+- Exception： 其他因编程错误或偶然的外在因素导致的一般性问题，可以针对性的对代码进行处理。异常分为两类，一种是**运行时异常**，一种是**编译时异常**
+
+![image-20240513173124043](./java基本语法.assets/image-20240513173124043.png)
+
+## 运行时异常
+
+- `NullPointException`空指针异常
+- `ClassCastException`类型转换异常
+- `ArithmeticException`算数异常
+- `ArrayIndexOutOfBoundsException`数组越界异常
+- `NumberFormatException`数字格式异常，当字符串转数字时可能会抛出这个异常
+
+## 编译时异常
+
+- `SQLException`
+- `IOException`
+- `FileNotFoundException`
+- `ClassNotFoundException`加载类，该类不存在
+- `EOFException`文件末尾异常
+- `IllegalArgumentException`参数异常
+
+## 异常处理方式
+
+- try-catch-finally
+
+  程序员在代码中捕获发生的异常
+
+- throws
+
+  将发生的异常抛出，交给调用者
+
+### try-catch
+
+```java
+try{
+    //这段代码可能发生异常
+    //如果某一行代码出现异常，则不会执行这行后面的代码，直接进入catch代码块
+}catch(Exception e){
+    //捕获到异常时，将异常封装为Exception对象，之后程序员自行处理异常
+}finally{
+    //无论有没有异常发生，这里一定会执行
+}
+
+//同时捕获多个异常
+try{
+    Person p = null;
+    p.getName();//NullPointerException
+    int a = 0;
+    c = 10 / a;//ArithmeticException
+}catch(NullPointerException ne){
+    
+}catch(ArithmeticException ae){
+    
+}catch(Exception e){
+    //需要注意捕获多个异常时，需要子类异常在父类异常前
+}
+
+//可以不带catch代码块
+try{
+    
+}finally{
+    //无论try代码块是否发生异常，这里的代码都会执行
+}
+```
+
+### throws
+
+![image-20240515123001497](./java基本语法.assets/image-20240515123001497.png)
+
+JVM处理异常时则会直接输出异常信息并终止程序运行
+
+只要没有显式的使用try-catch处理异常，则默认为throws处理
+
+throws可以同时抛出多个异常
+
+- 对于编译异常，程序必须处理。比如读文件无论是否能够读到该文件，都要处理文件无法找到的异常
+- 对于运行异常，则默认为throws处理
+- 子类重写父类方法时，所抛出的异常要么和父类一致，要么为父类抛出异常的子类
+
+## 自定义异常
+
+如果程序发生了某些错误，但这些错误并不在Throwable的子类中，则需要自定义异常
+
+- 定义类：需要继承Exception或RuntimeException
+- 继承Exception属于编译异常，继承RuntimeException属于运行异常
+
+```java
+public class IllegalAge extends RuntimeException{
+    public IllegalAge(String message) {
+        super(message);
+    }
+}
+
+public class Run {
+    public static void main(String[] args) {
+        int age = 80;
+        if (age < 18 || age > 22){
+            throw new IllegalAge("年龄需要在18-22岁之间");
+        }
+        System.out.println("你的年龄是：" + age);
+    }
+}
+```
+
+![image-20240515125248720](./java基本语法.assets/image-20240515125248720.png)
+
+## throw和throws
+
+![image-20240515125419743](./java基本语法.assets/image-20240515125419743.png)
+
+# 常用类
+
+## 包装类
+
+![image-20240515125551014](./java基本语法.assets/image-20240515125551014.png)
+
+![image-20240515125807756](./java基本语法.assets/image-20240515125807756.png)
+
+![image-20240515125829665](./java基本语法.assets/image-20240515125829665.png)
+
+![image-20240515125839086](./java基本语法.assets/image-20240515125839086.png)
+
+### 包装类和基本数据类型转换
+
+```java
+public class Run {
+    public static void main(String[] args) {
+        //jdk5以前
+        int n1 = 100;
+        Integer i = new Integer(n1);
+        Integer j = Integer.valueOf(n1);
+
+        int m =  i.intValue();
+
+        //jdk5以后
+        int n2 = 100;
+        Integer k = n2;//底层使用的还是valueOf方法
+
+        int l = k;//底层使用的仍然是intValue
+        
+    }
+}
+```
+
+```java
+Object obj1 = true? new Integer(1) : new Double(2.0);//输出1.0
+
+Object obj2;
+if (true) obj2 = new Integer(1);
+else obj2 = new Double(2.0);
+//obj2为1
+```
+
+### 包装类和String转换
+
+```java
+public class ToString {
+    Integer i = 10;
+    String str1 = i + "";
+
+    String str2 = i.toString();
+
+    String str3 = String.valueOf(i);
+
+    String str4 = "1234";
+    Integer i2 = Integer.parseInt(str4);
+    Integer i3 = new Integer(str4);
+}
+```
+
+### 常用方法
+
+![image-20240515131721247](./java基本语法.assets/image-20240515131721247.png)
+
+### Integer
+
+![image-20240515132149668](./java基本语法.assets/image-20240515132149668.png)
+
+```java
+//valueOf源码
+public static Integer valueOf(int i) {
+    if (i >= IntegerCache.low && i <= IntegerCache.high)
+        return IntegerCache.cache[i + (-IntegerCache.low)];
+    return new Integer(i);
+}
+//IntegerCache.low为-128，IntegerCache.high为127
+```
+
+```java
+Integer i = 127;
+int j = 127;
+System.out.println(i == j);//true
+//只要有基本数据类型，==就是判断是否为值相等
+```
+
+### String
+
+- 字符串使用Unicode字符编码，一个字符占两个字节
+
+- String的常用构造器
+
+  - String s1 = new String();
+  - String s2 = new String(String);
+  - String s3 = new String(char[]);
+  - String s4 = new String(char[], int startIndex, int count);
+
+- 实现了Serializable接口，可以串行化，进行网络传输
+
+- 实现了Comparable接口，可以进行比较
+
+- 是final类，不可被继承
+
+- 在底层仍然是一个char数组，private final char value[];
+
+  注意是final类型，是常量，无法更改。是地址不能更改，而不是地址中的内容不可更改
+
+![image-20240515134349827](./java基本语法.assets/image-20240515134349827.png)
+
+#### 创建String对象
+
+- 直接赋值，String s = "hahaha";
+
+  先从常量池中查找是否有"hahaha"的数据空间，如果有则直接指向；如果没有则重新创建，然后指向
+
+- 调用构造器创建
+
+  先从堆中创建空间，里面维护value属性，指向常量池的数据空间，如果常量池没有该常量，则创建，如果有则让value直接指向
+
+![image-20240515135312695](./java基本语法.assets/image-20240515135312695.png)
+
+```java
+public class Com {
+
+    public static void main(String[] args) {
+        String s1 = "abc";
+        String s2 = new String("abc");
+
+        System.out.println(s1.equals(s2));//true
+        System.out.println(s1 == s2);//false
+        
+
+        System.out.println(s1 == s2.intern());//true
+        System.out.println(s2 == s2.intern());//false
+    }
+
+}
+```
+
+#### String特性
+
+```java
+public class Create {
+    String a = "Hello ";
+    String b = "World!";
+
+    //先创建了一个StringBuilder
+    //调用append方法将字符串a放入
+    //再调用append方法将字符串b放入
+    //调用toStirng方法，调用构造器String(char[], int startIndex, int count)
+    //返回
+    String c = a + b;
+    String d = "Hello World!";
+    d == c;//false，因为c在创建时使用了构造器
+}
+```
+
+#### String常用方法
+
+String类是保存字符串常量的，每次更新都需要重新开辟空间，效率较低，因此java设计者还提供了StringBuilder和StringBuffer来增强String的功能并提高效率
+
+![image-20240515141928444](./java基本语法.assets/image-20240515141928444.png)
+
+![image-20240515142206336](./java基本语法.assets/image-20240515142206336.png)
+
+### StringBuffer
+
+可变的字符序列，可以对字符串内容进行增删
+
+很多方法与String相同，但StringBuffer是可变长度的
+
+StringBuffer是一个容器
+
+![image-20240516132250425](./java基本语法.assets/image-20240516132250425.png)
+
+- StringBuffer的直接父类是AbstractStringBuilder
+- StringBuffer实现了Serializable，可是串行化
+- AbstractStringBuilder中的char[] value不是final类型的，因此是存放在堆中的，而不是常量池中
+- StringBuffer是一个final类，不可被继承
+
+String和StringBuffer的区别
+
+- String保存的是字符串常量，里面的值不能更改。每次更新String时实际上是更改地址，也就是会重新创建一个String对象然后将地址重新指向它。放在常量池中
+- 而StringBuffer保存的是字符串变量，里面的值可以更改，每次就是更新其中的内容。放在堆中
+
+#### 创建StringBuffer
+
+```java
+public class Creat {
+    public static void main(String[] args) {
+
+        //创建一个容量大小为16的char[]
+        StringBuffer stringBuffer1 = new StringBuffer();
+
+        //创建一个容量大小为100的char[]
+        StringBuffer stringBuffer2 = new StringBuffer(100);
+
+        //通过String创建StringBuffer
+        //此时容量大小为str的长度加上16
+        StringBuffer stringBuffer3 = new StringBuffer("hello");
+    }
+}
+```
+
+#### String和StringBuffer转换
+
+```java
+public class Convert {
+    public static void main(String[] args) {
+        //String -->  StringBuffer
+        String str = "hello world";
+        StringBuffer sb = new StringBuffer(str);
+
+        StringBuffer stringBuffer = new StringBuffer();
+        stringBuffer.append(str);
+        
+        
+        //StringBuffer -->  String
+        String hello = sb.toString();
+        
+        String s = new String(sb);
+    }
+}
+```
+
+#### StringBuffer的常用方法
+
+![image-20240516133827542](./java基本语法.assets/image-20240516133827542.png)
+
+```java
+public class Method {
+    public static void main(String[] args) {
+        String s = null;
+        StringBuffer sb = new StringBuffer();
+        sb.append(s);
+        System.out.println(sb.length());//4
+
+        System.out.println(sb);//null
+        StringBuffer sb1 = new StringBuffer(s);//异常
+        System.out.println(sb1);
+    }
+}
+
+//append方法如果字符串为空，则将null追加在末尾
+//如果用构造器null来初始化，由于在最开始会调用str.length()方法，会出现空指针异常
+```
+
+### StringBuilder
+
+- 一个可变的字符串序列。此类提供一个与SttingBuffer兼容的API，但不保证同步。常常用在字符串缓冲区仅被单个线程使用的时候。效率要比StringBuffer高
+- 主要使用append和insert两个方法，可重载这些方法
+
+![image-20240516135555142](./java基本语法.assets/image-20240516135555142.png)
+
+- StringBuffer的直接父类是AbstractStringBuilder
+- StringBuffer实现了Serializable，可是串行化
+- AbstractStringBuilder中的char[] value不是final类型的，因此是存放在堆中的，而不是常量池中
+- StringBuffer是一个final类，不可被继承
+
+![image-20240516140000532](./java基本语法.assets/image-20240516140000532.png)
+
+![image-20240516140124786](./java基本语法.assets/image-20240516140124786.png)
+
+### Math
+
+![image-20240516140806262](./java基本语法.assets/image-20240516140806262.png)
+
+均为静态方法
+
+### Arrays
+
+包含了一系列静态方法，用于管理或操作数组
+
+```java
+public class Method {
+    public static void main(String[] args) {
+        Integer[] arr = {1, 3, 55, 10, 421, 432, 255};
+        System.out.println(Arrays.toString(arr));//[1, 3, 55, 10, 421, 432, 255]
+        Arrays.sort(arr);//从小到大排序
+        System.out.println(Arrays.toString(arr));//[1, 3, 10, 55, 255, 421, 432]
+
+        Arrays.sort(arr, new Comparator<Integer>() {//匿名内部类
+            @Override
+            public int compare(Integer o1, Integer o2) {
+                return o2 - o1;
+            }
+        });//从大到小排序
+        System.out.println(Arrays.toString(arr));//[432, 421, 255, 55, 10, 3, 1]
+        
+        Arrays.sort(arr);
+        int index = Arrays.binarySearch(arr, 421);//必须是有序的
+        Integer[] newarr = Arrays.copyOf(arr, arr.length);
+        Arrays.fill(newarr, 99);
+        
+        Arrays.equals(arr, newarr);
+        Arrays.asList();//转化成列表
+    }
+
+}
+```
+
+### System
+
+![image-20240516143758405](./java基本语法.assets/image-20240516143758405.png)
+
+### BigInteger和BigDecimal
+
+![image-20240516144005795](./java基本语法.assets/image-20240516144005795.png)
+
+### Date
+
+![image-20240516144356563](./java基本语法.assets/image-20240516144356563.png)
+
+![image-20240516144515370](./java基本语法.assets/image-20240516144515370.png)
+
+//回来再补日期这块，看不下去了
+
+## 集合
+
+![image-20240516144818782](./java基本语法.assets/image-20240516144818782.png)
+
+![image-20240516145404073](./java基本语法.assets/image-20240516145404073.png)
+
+![image-20240516145516634](./java基本语法.assets/image-20240516145516634.png)
+
+### Collection
+
+```java
+public interface Collection<E> extends Iterable<E>
+```
+
+- Collection的实现子类可以存放多个元素，每个元素都可以是Object
+- Collection接口没有直接实现子类，而是通过子接口Set和List实现的
+
+![image-20240516150029319](./java基本语法.assets/image-20240516150029319.png)
+
+```java
+public class Method {
+    public static void main(String[] args) {
+        List arr = new ArrayList();
+
+        arr.add(10);
+        arr.add(true);
+        arr.add("jack");
+
+        //arr.remove(0);
+        //arr.remove("jack");
+        //arr.remove(true);
+
+        arr.contains(10);
+
+        arr.isEmpty();
+
+        arr.clear();
+
+        arr.size();
+
+        arr.addAll(arr);
+
+        arr.containsAll(arr);
+
+        arr.removeAll(arr);
+    }
+}
+```
+
+### 迭代器
+
+![image-20240516151118049](./java基本语法.assets/image-20240516151118049.png)
+
+foreach的底层就是迭代器
+
+### List
+
+![image-20240516152040073](./java基本语法.assets/image-20240516152040073.png)
+
+![image-20240516152448135](./java基本语法.assets/image-20240516152448135.png)
+
+### ArrayList
+
+- 可以放入任何元素，甚至包括null
+- 底层是使用数组实现的
+- 基本等同于vector，但它是线程不安全的。效率比vector高
+
+#### 源码
+
+- ArrayList中维护的是一个Object类型的数组elementData数组
+- 创建ArrayList对象时，如果使用的是无参构造器，则初始elementData容量为0，第一次扩容为10，以后每次为原来的1.5倍
+- 如果创建时指定了容量，则后面每次都是1.5倍
+
+```java
+transient Object[] elementData; // non-private to simplify nested class access
+//transient 表示瞬间。被修饰的属性不会被序列化。
+//序列化就是用一个字节序列表示一个对象
+
+//如果一个用户有一些密码等信息，为了安全起见，不希望在网络操作中被传输，这些信息对应的变量就可以加上transient关键字。换句话说，这个字段的生命周期仅存于调用者的内存中而不会写到磁盘里持久化。
+```
+
+```java
+public ArrayList() {
+    this.elementData = DEFAULTCAPACITY_EMPTY_ELEMENTDATA;
+}//无参构造器
+private static final Object[] DEFAULTCAPACITY_EMPTY_ELEMENTDATA = {};//就是一个空数组
+
+public boolean add(E e) {
+    ensureCapacityInternal(size + 1);  // Increments modCount!!确保容量足够
+    elementData[size++] = e;
+    return true;
+}
+
+private void ensureCapacityInternal(int minCapacity) {
+    ensureExplicitCapacity(calculateCapacity(elementData, minCapacity));
+}
+
+private static int calculateCapacity(Object[] elementData, int minCapacity) {//计算要扩容的容量大小
+    if (elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA) {//判断是否为空数组
+        return Math.max(DEFAULT_CAPACITY, minCapacity);//空数组则将容量置为10或插入元素数量中的较大值
+    }
+    return minCapacity;//不是空数组则直接扩容
+}
+private static final int DEFAULT_CAPACITY = 10;
+
+private void ensureExplicitCapacity(int minCapacity) {//决定是否扩容
+    modCount++;//防止多个线程同时修改，记录集合被修改的次数
+
+    // overflow-conscious code
+    if (minCapacity - elementData.length > 0)//确实需要扩容
+        grow(minCapacity);
+}
+
+private void grow(int minCapacity) {
+    // overflow-conscious code
+    int oldCapacity = elementData.length;
+    int newCapacity = oldCapacity + (oldCapacity >> 1);//1.5倍
+    if (newCapacity - minCapacity < 0)
+        newCapacity = minCapacity;
+    if (newCapacity - MAX_ARRAY_SIZE > 0)//太大
+        newCapacity = hugeCapacity(minCapacity);
+    // minCapacity is usually close to size, so this is a win:
+    elementData = Arrays.copyOf(elementData, newCapacity);//使用copyOf重新创建一个数组
+}
+```
+
+```java
+public ArrayList(int initialCapacity) {//指定容量大小的构造器
+    if (initialCapacity > 0) {
+        this.elementData = new Object[initialCapacity];
+    } else if (initialCapacity == 0) {
+        this.elementData = EMPTY_ELEMENTDATA;
+    } else {
+        throw new IllegalArgumentException("Illegal Capacity: "+ initialCapacity);
+    }
+}
+```
+
+### Vector
+
+```java
+public class Vector<E>
+    extends AbstractList<E>
+    implements List<E>, RandomAccess, Cloneable, java.io.Serializable
+```
+
+- 底层也是一个数组`protected Object[] elementData;`
+- 线程安全的，vector类的操作方法带有synchronized
+
+#### 源码
+
+![image-20240516164847061](./java基本语法.assets/image-20240516164847061.png)
+
+```java
+public Vector() {
+    this(10);
+}//无参构造器
+public Vector(int initialCapacity) {
+    this(initialCapacity, 0);
+}//指定容量大小的构造器
+public Vector(int initialCapacity, int capacityIncrement) {
+    super();
+    if (initialCapacity < 0)
+        throw new IllegalArgumentException("Illegal Capacity: "+ initialCapacity);
+    this.elementData = new Object[initialCapacity];
+    this.capacityIncrement = capacityIncrement;
+}
+
+public synchronized boolean add(E e) {
+    modCount++;//记录被修改的次数
+    
+    ensureCapacityHelper(elementCount + 1);//确保容量足够
+    elementData[elementCount++] = e;
+    return true;
+}
+
+private void ensureCapacityHelper(int minCapacity) {
+    // overflow-conscious code
+    if (minCapacity - elementData.length > 0)//容量不够则扩容
+        grow(minCapacity);
+}
+
+private void grow(int minCapacity) {
+    // overflow-conscious code
+    int oldCapacity = elementData.length;
+    int newCapacity = oldCapacity + ((capacityIncrement > 0) ? capacityIncrement : oldCapacity);//两倍或者加上自定义的扩容大小
+    if (newCapacity - minCapacity < 0)
+        newCapacity = minCapacity;
+    if (newCapacity - MAX_ARRAY_SIZE > 0)
+        newCapacity = hugeCapacity(minCapacity);
+    elementData = Arrays.copyOf(elementData, newCapacity);//扩容
+}
+```
+
+### LinkedList
+
+- 底层实现了双向链表和双端队列特点
+- 可以添加任意元素，包括`null`
+- 线程不安全
+
+#### 源码
+
+```java
+public class LinkedList<E>
+    extends AbstractSequentialList<E>
+    implements List<E>, Deque<E>, Cloneable, java.io.Serializable
+```
+
+```java
+transient int size = 0;//链表大小
+
+/**
+ * Pointer to first node.
+ * Invariant: (first == null && last == null) ||
+ *            (first.prev == null && first.item != null)
+ */
+transient Node<E> first;//头节点指针
+
+/**
+ * Pointer to last node.
+ * Invariant: (first == null && last == null) ||
+ *            (last.next == null && last.item != null)
+ */
+transient Node<E> last;//尾节点指针
+
+private static class Node<E> {
+    E item;
+    Node<E> next;
+    Node<E> prev;
+
+    Node(Node<E> prev, E element, Node<E> next) {
+        this.item = element;
+        this.next = next;
+        this.prev = prev;
+    }
+}
+
+public boolean add(E e) {
+    linkLast(e);
+    return true;
+}
+
+void linkLast(E e) {
+    final Node<E> l = last;
+    final Node<E> newNode = new Node<>(l, e, null);//pre指向last
+    last = newNode;//修改last指针
+    if (l == null)//原来为空，头尾相同
+        first = newNode;
+    else
+        l.next = newNode;
+    size++;
+    modCount++;
+}
+
+public boolean remove(Object o) {
+    if (o == null) {
+        for (Node<E> x = first; x != null; x = x.next) {
+            if (x.item == null) {
+                unlink(x);
+                return true;
+            }
+        }
+    } else {
+        for (Node<E> x = first; x != null; x = x.next) {
+            if (o.equals(x.item)) {
+                unlink(x);
+                return true;
+            }
+        }
+    }
+    return false;
+}
+```
+
+### Set
+
+- 无序的，没有索引
+- 不允许重复元素，最多包含一个null
+- 不能使用索引方式访问
+- 取出元素的顺序不是添加的顺序，但顺序是固定的
+- add相同元素返回`false`
+
+#### 遍历
+
+迭代器和foreach，不能通过索引获取
+
+```java
+public class Method {
+    public static void main(String[] args) {
+        Set set = new HashSet();
+
+        set.add("john");
+        set.add("jack");
+        set.add(null);
+        set.add("lucy");
+
+
+        Iterator iterator = set.iterator();
+        while (iterator.hasNext()) {
+            Object object =  iterator.next();
+            System.out.println(object);
+        }
+
+        for (Object object : set) {
+            System.out.println(object);
+        }
+    }
+
+}
+```
+
+### Hashset
+
+- 在添加一个元素时，会先得到其哈希值，然后将其转换为索引值
+- 根据索引值将其放入到散列表（数组+链表）中
+- 如果没有元素，则直接添加
+- 如果有元素，则调用equals方法，相同则不添加，不同则添加
+- 链表元素数量超过8，且数组大小超过64，则将这条链表转换为红黑树
+- **就是哈希桶**
+
+**扩容机制**
+
+1. 第一次添加时，table数组扩容到16，加载因子为0.75。此时临界值为12
+2. 如果散列表中的所有元素之和达到了临界值12，就会加倍扩容到32，新的临界值为24，以此类推
+3. 链表长度如果>=8，此时如果table大小不足64，则会继续扩大table数组，容量翻倍；如果table>=64，则会将链表转换为红黑树
+4. table数组扩容后会对所有元素进行重哈希
+
+```java
+public class Method {
+    public static void main(String[] args) {
+        Set set = new HashSet();
+
+        set.add("john");
+        set.add("jack");
+        set.add(null);
+        set.add("lucy");
+
+        set.remove(null);
+
+        set.add(new Dog("tom"));
+        set.add(new Dog("tom"));
+
+        System.out.println(set);//[Dog{name='tom'}, john, Dog{name='tom'}, lucy, jack]
+
+        System.out.println(new String("tom"));//true
+        System.out.println(new String("tom"));//false
+        //String类重写了equals方法，变成了比较值是否相同，而不是地址是否相同
+    }
+}
+```
+
+#### 源码
+
+```java
+public HashSet() {//hashset的底层为hashmap
+    map = new HashMap<>();
+}
+
+public boolean add(E e) {
+    return map.put(e, PRESENT)==null;
+}
+
+public V put(K key, V value) {//value=PRESENT
+    return putVal(hash(key), key, value, false, true);
+}
+
+static final int hash(Object key) {
+    int h;
+    return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
+}
+
+final V putVal(int hash, K key, V value, boolean onlyIfAbsent, boolean evict) {
+    Node<K,V>[] tab; Node<K,V> p; int n, i;//辅助变量
+    if ((tab = table) == null || (n = tab.length) == 0)//table就是HashMap的散列表，table为空或长度等于零
+        n = (tab = resize()).length;//初始化table表，并将其赋值给tab
+    if ((p = tab[i = (n - 1) & hash]) == null)//根据key得到的hash计算其索引，(n - 1) & hash相当于取模，取hash低位
+        tab[i] = newNode(hash, key, value, null);//该位置为空，直接将其插入
+    else {//索引位置不为空，
+        Node<K,V> e; K k;
+        
+        //p是索引位置已经有的元素
+        if (p.hash == hash && ((k = p.key) == key || (key != null && key.equals(k))))
+            //如果key相同，即是同一对象，或equals方法返回true，并且两者的哈希值相同，则确定为同一元素，不再插入
+            e = p;
+        else if (p instanceof TreeNode)//不是相同元素，树节点，直接作红黑树插入
+            e = ((TreeNode<K,V>)p).putTreeVal(this, tab, hash, key, value);
+        else {//链表插入
+            for (int binCount = 0; ; ++binCount) {
+                
+                //该位置仅有一个p元素，p元素后面没有链接别的元素
+                if ((e = p.next) == null) {
+                    p.next = newNode(hash, key, value, null);//创建新节点插入
+                    if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st
+                        treeifyBin(tab, hash);//链表太长则变换成红黑树
+                    break;//跳出循环
+                }
+                
+                //判断有没有和后续元素相同
+                if (e.hash == hash && ((k = e.key) == key || (key != null && key.equals(k))))
+                    break;
+                //遍历链表
+                p = e;
+            }
+        }
+        if (e != null) { // existing mapping for key
+            V oldValue = e.value;
+            if (!onlyIfAbsent || oldValue == null)
+                e.value = value;
+            afterNodeAccess(e);
+            return oldValue;//返回PRESENT，不为空，表示add失败
+        }
+    }
+    ++modCount;
+    if (++size > threshold)//大小是否超过加载因子
+        resize();
+    afterNodeInsertion(evict);//空方法，留给hashMap的子类实现
+    return null;
+}
+
+final Node<K,V>[] resize() {
+    Node<K,V>[] oldTab = table;
+    int oldCap = (oldTab == null) ? 0 : oldTab.length;
+    int oldThr = threshold;
+    int newCap, newThr = 0;
+    if (oldCap > 0) {
+        if (oldCap >= MAXIMUM_CAPACITY) {
+            threshold = Integer.MAX_VALUE;
+            return oldTab;
+        }
+        else if ((newCap = oldCap << 1) < MAXIMUM_CAPACITY &&
+                 oldCap >= DEFAULT_INITIAL_CAPACITY)
+            newThr = oldThr << 1; // double threshold
+    }
+    else if (oldThr > 0) // initial capacity was placed in threshold
+        newCap = oldThr;
+    else {               // zero initial threshold signifies using defaults
+        newCap = DEFAULT_INITIAL_CAPACITY;//初始化容量，为16
+        newThr = (int)(DEFAULT_LOAD_FACTOR * DEFAULT_INITIAL_CAPACITY);//加载因子 乘 容量
+    }
+    if (newThr == 0) {
+        float ft = (float)newCap * loadFactor;
+        newThr = (newCap < MAXIMUM_CAPACITY && ft < (float)MAXIMUM_CAPACITY ?
+                  (int)ft : Integer.MAX_VALUE);
+    }
+    threshold = newThr;
+    @SuppressWarnings({"rawtypes","unchecked"})
+    Node<K,V>[] newTab = (Node<K,V>[])new Node[newCap];
+    table = newTab;
+    if (oldTab != null) {
+        for (int j = 0; j < oldCap; ++j) {
+            Node<K,V> e;
+            if ((e = oldTab[j]) != null) {
+                oldTab[j] = null;
+                if (e.next == null)
+                    newTab[e.hash & (newCap - 1)] = e;
+                else if (e instanceof TreeNode)
+                    ((TreeNode<K,V>)e).split(this, newTab, j, oldCap);
+                else { // preserve order
+                    Node<K,V> loHead = null, loTail = null;
+                    Node<K,V> hiHead = null, hiTail = null;
+                    Node<K,V> next;
+                    do {
+                        next = e.next;
+                        if ((e.hash & oldCap) == 0) {
+                            if (loTail == null)
+                                loHead = e;
+                            else
+                                loTail.next = e;
+                            loTail = e;
+                        }
+                        else {
+                            if (hiTail == null)
+                                hiHead = e;
+                            else
+                                hiTail.next = e;
+                            hiTail = e;
+                        }
+                    } while ((e = next) != null);
+                    if (loTail != null) {
+                        loTail.next = null;
+                        newTab[j] = loHead;
+                    }
+                    if (hiTail != null) {
+                        hiTail.next = null;
+                        newTab[j + oldCap] = hiHead;
+                    }
+                }
+            }
+        }
+    }
+    return newTab;
+}
+```
+
+### LinkedHashSet
+
+```java
+public class LinkedHashSet<E>
+    extends HashSet<E>
+    implements Set<E>, Cloneable, java.io.Serializable
+```
+
+- 继承自HashSet
+- 底层为LinkedHashMap，维护的是数组加双向链表
+- 通过双向链表维护元素次
+- 不允许添加重复元素
+
+####  源码
+
+![image-20240517160543978](./java基本语法.assets/image-20240517160543978.png)
+
+![image-20240517160803006](./java基本语法.assets/image-20240517160803006.png)
+
+- LinkedHashSet的底层为LinkedHashMap map
+- map主要进行存储的数据结构为table
+- table为HashMap.Node类型，其中存放的为LinkedHashMap.Entry类型。这个类型是HashMap.Node的子类
+- 最大的区别是相比于HashMap.Node仅有一个next指针域维护链表，LinkedHashMap.Entry多了一个before和after指针来维护双向链表，来保证存储次序
+
+### Map
+
+- Map与Collection并列存在。用于保存具有映射关系的k-v数据
+
+- Map中的key和value可以是任何引用类型的数据，封装到HashMap$Node中
+
+- Map中的key不允许重复，value可以重复，且都可以为null
+
+- 常用String类作为Map的key
+
+- key和value存在单向的一对一映射关系，即通过指定的key可以找到唯一的value
+
+- 不保证线程同步
+
+- 无需存储
+
+- k-v就是存放在HashMap$Node结构中。而Node数组就是table，数据存放在table中。
+
+  程序员无法直接访问table，为了方便程序员遍历Map集合，还会创建一个`EntrySet`集合，这个集合存放的元素类型为`Entry`，而`entrySet`指向的地址与table相同。
+
+  本质区别在于table是Node的数组，而entrySet是Node的集合。由于Node属于内部类，外部代码想访问Node只能通过entrySet、keySet或者values
+
+  ```java
+  transient Set<Map.Entry<K, V>> entrySet;
+  //Entry中存放的是Node的地址
+  
+  public class Method {
+      public static void main(String[] args) {
+          Map map = new HashMap();
+          map.put("no1", "jack");
+          map.put("no2", "lucy");
+          map.put("no1", "marry");//会将jack替换掉
+  
+          System.out.println(map.get("no2"));//lucy
+  
+          Set set = map.entrySet();
+          System.out.println(set.getClass());//class java.util.HashMap$EntrySet
+      }
+  }
+  ```
+
+- HashMap$Node源码
+
+  ```java
+  static class Node<K,V> implements Map.Entry<K,V> {//可以看到,Entry是一个接口
+      final int hash;
+      final K key;
+      V value;
+      Node<K,V> next;
+  
+      Node(int hash, K key, V value, Node<K,V> next) {
+          this.hash = hash;
+          this.key = key;
+          this.value = value;
+          this.next = next;
+      }
+  	
+      //提供了getKey和getValue方法，方便遍历Map
+      public final K getKey()        { return key; }
+      public final V getValue()      { return value; }
+      public final String toString() { return key + "=" + value; }
+  
+      public final int hashCode() {
+          return Objects.hashCode(key) ^ Objects.hashCode(value);
+      }
+  
+      public final V setValue(V newValue) {
+          V oldValue = value;
+          value = newValue;
+          return oldValue;
+      }
+  
+      public final boolean equals(Object o) {
+          if (o == this)
+              return true;
+          if (o instanceof Map.Entry) {
+              Map.Entry<?,?> e = (Map.Entry<?,?>)o;
+              if (Objects.equals(key, e.getKey()) &&
+                  Objects.equals(value, e.getValue()))
+                  return true;
+          }
+          return false;
+      }
+  }
+  ```
+
+- ```java
+      /**
+       * The table, initialized on first use, and resized as
+       * necessary. When allocated, length is always a power of two.
+       * (We also tolerate length zero in some operations to allow
+       * bootstrapping mechanics that are currently not needed.)
+       */
+      transient Node<K,V>[] table;
+  
+      /**
+       * Holds cached entrySet(). Note that AbstractMap fields are used
+       * for keySet() and values().
+       */
+      transient Set<Map.Entry<K,V>> entrySet;
+  ```
+
+```java
+public class Method {
+    public static void main(String[] args) {
+        Map map = new HashMap();
+        map.put("no1", "jack");
+        map.put("no2", "lucy");
+        map.put("no1", "marry");//会将jack替换掉
+
+        System.out.println(map.get("no2"));//lucy
+
+        Set set = map.entrySet();
+        Set keySet = map.keySet();
+        Collection col = map.values();
+        System.out.println(set.getClass());//class java.util.HashMap$EntrySet
+        System.out.println(set);//[no2=lucy, no1=marry]
+        System.out.println(keySet);//[no2, no1]
+        System.out.println(col);//[lucy, marry]
+    }
+}
+```
+
+![image-20240517192344847](./java基本语法.assets/image-20240517192344847.png)
+
+#### 遍历
+
+主要通过entrySet、keySet或者values进行遍历
+
+### HashMap
+
+```java
+final V putVal(int hash, K key, V value, boolean onlyIfAbsent, boolean evict) {
+    Node<K,V>[] tab; Node<K,V> p; int n, i;//辅助变量
+    if ((tab = table) == null || (n = tab.length) == 0)//table就是HashMap的散列表，table为空或长度等于零
+        n = (tab = resize()).length;//初始化table表，并将其赋值给tab
+    if ((p = tab[i = (n - 1) & hash]) == null)//根据key得到的hash计算其索引，(n - 1) & hash相当于取模，取hash低位
+        tab[i] = newNode(hash, key, value, null);//该位置为空，直接将其插入
+    else {//索引位置不为空，
+        Node<K,V> e; K k;
+        
+        //p是索引位置已经有的元素
+        if (p.hash == hash && ((k = p.key) == key || (key != null && key.equals(k))))
+            //如果key相同，即是同一对象，或equals方法返回true，并且两者的哈希值相同，则确定为同一元素，不再插入
+            e = p;
+        else if (p instanceof TreeNode)//不是相同元素，树节点，直接作红黑树插入
+            e = ((TreeNode<K,V>)p).putTreeVal(this, tab, hash, key, value);
+        else {//链表插入
+            for (int binCount = 0; ; ++binCount) {
+                
+                //该位置仅有一个p元素，p元素后面没有链接别的元素
+                if ((e = p.next) == null) {
+                    p.next = newNode(hash, key, value, null);//创建新节点插入
+                    if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st
+                        treeifyBin(tab, hash);//链表太长则变换成红黑树
+                    break;//跳出循环
+                }
+                
+                //判断有没有和后续元素相同
+                if (e.hash == hash && ((k = e.key) == key || (key != null && key.equals(k))))
+                    break;
+                //遍历链表
+                p = e;
+            }
+        }
+        if (e != null) { // existing mapping for key
+            V oldValue = e.value;//以前的value
+            if (!onlyIfAbsent || oldValue == null)
+                e.value = value;//将旧的value更改
+            afterNodeAccess(e);
+            return oldValue;//返回旧的value
+        }
+    }
+    ++modCount;
+    if (++size > threshold)//大小是否超过加载因子
+        resize();
+    afterNodeInsertion(evict);//空方法，留给hashMap的子类实现
+    return null;
+}
+```
+
+### HashTable
+
+P540

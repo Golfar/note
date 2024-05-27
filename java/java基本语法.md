@@ -3069,6 +3069,64 @@ public class LinkedHashSet<E>
 - table为HashMap.Node类型，其中存放的为LinkedHashMap.Entry类型。这个类型是HashMap.Node的子类
 - 最大的区别是相比于HashMap.Node仅有一个next指针域维护链表，LinkedHashMap.Entry多了一个before和after指针来维护双向链表，来保证存储次序
 
+### TreeSet
+
+![image-20240526170544548](./java基本语法.assets/image-20240526170544548.png)
+
+区分与HashSet最大的特点是可以排序
+
+- 需要自定义排序时，使用输入比较器的构造器
+
+  ```java
+  public class Method {
+      public static void main(String[] args) {
+          TreeSet treeSet = new TreeSet();
+          TreeSet treeSet1 = new TreeSet(new Comparator() {
+              @Override
+              public int compare(Object o1, Object o2) {
+                  return ((String)o2).compareTo((String) o1);
+              }
+          });
+          treeSet.add("a");
+          treeSet.add("b");
+          treeSet.add("loong");
+          treeSet.add("dawdwa");
+          treeSet.add("c");
+          treeSet.add("av");
+  
+          treeSet1.add("a");
+          treeSet1.add("b");
+          treeSet1.add("loong");
+          treeSet1.add("dawdwa");
+          treeSet1.add("c");
+          treeSet1.add("av");
+  
+          System.out.println(treeSet);//[a, av, b, c, dawdwa, loong]
+          System.out.println(treeSet1);//[loong, dawdwa, c, b, av, a]
+      }
+  
+  }
+  ```
+
+- 底层的实现为TreeMap
+
+- 如果比较器放回的值为0，就不会将元素插入
+
+  ```java
+  if (cpr != null) {
+      do {
+          parent = t;
+          cmp = cpr.compare(key, t.key);
+          if (cmp < 0)
+              t = t.left;
+          else if (cmp > 0)
+              t = t.right;
+          else//比较器返回0
+              return t.setValue(value);//直接返回不插入。比如比较器为返回字符串长的。那么第二个相等长度的字符串不会被插入
+      } while (t != null);
+  }
+  ```
+
 ### Map
 
 - Map与Collection并列存在。用于保存具有映射关系的k-v数据
@@ -3252,4 +3310,737 @@ final V putVal(int hash, K key, V value, boolean onlyIfAbsent, boolean evict) {
 
 ### HashTable
 
-P540
+![image-20240526161945631](./java基本语法.assets/image-20240526161945631.png)
+
+```java
+public class Hashtable<K,V>
+    extends Dictionary<K,V>
+    implements Map<K,V>, Cloneable, java.io.Serializable {
+```
+
+- 存放的为K-V
+
+- 键和值都不能为null，否则会抛出空指针异常
+
+- 使用方法基本和hashMap一致
+
+- hashTable线程安全，hashMap线程不安全
+
+- 底层存放数据的数据结构为`Hashtable$Entry`，初始化大小为11
+
+  加载因子仍为0.75
+
+  ```java
+  private transient Entry<?,?>[] table;
+  private static class Entry<K,V> implements Map.Entry<K,V> {//静态内部类
+          final int hash;
+          final K key;
+          V value;
+          Entry<K,V> next;
+  
+          protected Entry(int hash, K key, V value, Entry<K,V> next) {
+              this.hash = hash;
+              this.key =  key;
+              this.value = value;
+              this.next = next;
+          }
+  
+          @SuppressWarnings("unchecked")
+          protected Object clone() {
+              return new Entry<>(hash, key, value,
+                                    (next==null ? null : (Entry<K,V>) next.clone()));
+          }
+  
+          // Map.Entry Ops
+  
+          public K getKey() {
+              return key;
+          }
+  
+          public V getValue() {
+              return value;
+          }
+  
+          public V setValue(V value) {
+              if (value == null)
+                  throw new NullPointerException();
+  
+              V oldValue = this.value;
+              this.value = value;
+              return oldValue;
+          }
+  
+          public boolean equals(Object o) {
+              if (!(o instanceof Map.Entry))
+                  return false;
+              Map.Entry<?,?> e = (Map.Entry<?,?>)o;
+  
+              return (key==null ? e.getKey()==null : key.equals(e.getKey())) &&
+                 (value==null ? e.getValue()==null : value.equals(e.getValue()));
+          }
+  
+          public int hashCode() {
+              return hash ^ Objects.hashCode(value);
+          }
+  
+          public String toString() {
+              return key.toString()+"="+value.toString();
+          }
+      }
+  ```
+
+- 扩容
+
+  ```java
+  public synchronized V put(K key, V value) {
+          // Make sure the value is not null
+          if (value == null) {
+              throw new NullPointerException();
+          }
+  
+          // Makes sure the key is not already in the hashtable.
+          Entry<?,?> tab[] = table;
+          int hash = key.hashCode();
+          int index = (hash & 0x7FFFFFFF) % tab.length;
+          @SuppressWarnings("unchecked")
+          Entry<K,V> entry = (Entry<K,V>)tab[index];
+          for(; entry != null ; entry = entry.next) {
+              if ((entry.hash == hash) && entry.key.equals(key)) {//替换
+                  V old = entry.value;
+                  entry.value = value;
+                  return old;
+              }
+          }
+  
+          addEntry(hash, key, value, index);//实际上添加了元素的方法
+          return null;
+      }
+  
+  private void addEntry(int hash, K key, V value, int index) {
+          modCount++;
+  
+          Entry<?,?> tab[] = table;
+          if (count >= threshold) {//数量大于临界值
+              // Rehash the table if the threshold is exceeded
+              rehash();//扩容重哈希
+  
+              tab = table;
+              hash = key.hashCode();
+              index = (hash & 0x7FFFFFFF) % tab.length;
+          }
+  
+          // Creates the new entry.
+          @SuppressWarnings("unchecked")
+          Entry<K,V> e = (Entry<K,V>) tab[index];
+          tab[index] = new Entry<>(hash, key, value, e);//添加新元素
+          count++;
+      }
+  
+  protected void rehash() {
+          int oldCapacity = table.length;
+          Entry<?,?>[] oldMap = table;
+  
+          // overflow-conscious code
+          int newCapacity = (oldCapacity << 1) + 1;//扩容：乘2加1
+          if (newCapacity - MAX_ARRAY_SIZE > 0) {//超过了最大容量
+              if (oldCapacity == MAX_ARRAY_SIZE)//以前的容量已经是最大容量了，就直接返回
+                  // Keep running with MAX_ARRAY_SIZE buckets
+                  return;
+              newCapacity = MAX_ARRAY_SIZE;
+          }
+          Entry<?,?>[] newMap = new Entry<?,?>[newCapacity];//新的table数组
+  
+          modCount++;
+          threshold = (int)Math.min(newCapacity * loadFactor, MAX_ARRAY_SIZE + 1);//新的临界值
+          table = newMap;//将新的table赋值给table成员
+  
+          for (int i = oldCapacity ; i-- > 0 ;) {//做重哈希操作
+              for (Entry<K,V> old = (Entry<K,V>)oldMap[i] ; old != null ; ) {
+                  Entry<K,V> e = old;
+                  old = old.next;
+  
+                  int index = (e.hash & 0x7FFFFFFF) % newCapacity;
+                  e.next = (Entry<K,V>)newMap[index];
+                  newMap[index] = e;
+              }
+          }
+      }
+  ```
+
+### HashMap和HashTable比较
+
+![image-20240526164812387](./java基本语法.assets/image-20240526164812387.png)
+
+### Properties
+
+- 继承自Hashtable类，并且实现了Map接口，也是使用一种键值对来存储数据
+- 使用特点与Hashtable类似
+- 还可以用于从`xxx.properties`文件中，加载数据到Properties对象，并进行读取和修改
+
+### TreeMap
+
+![image-20240526172321156](./java基本语法.assets/image-20240526172321156.png)
+
+```java
+public V put(K key, V value) {
+        Entry<K,V> t = root;
+        if (t == null) {
+            compare(key, key); // type (and possibly null) check
+
+            root = new Entry<>(key, value, null);
+            size = 1;
+            modCount++;
+            return null;
+        }
+        int cmp;
+        Entry<K,V> parent;
+        // split comparator and comparable paths
+        Comparator<? super K> cpr = comparator;
+        if (cpr != null) {
+            do {
+                parent = t;
+                cmp = cpr.compare(key, t.key);
+                if (cmp < 0)
+                    t = t.left;
+                else if (cmp > 0)
+                    t = t.right;
+                else
+                    return t.setValue(value);
+            } while (t != null);
+        }
+        else {
+            if (key == null)
+                throw new NullPointerException();
+            @SuppressWarnings("unchecked")
+                Comparable<? super K> k = (Comparable<? super K>) key;
+            do {
+                parent = t;
+                cmp = k.compareTo(t.key);
+                if (cmp < 0)
+                    t = t.left;
+                else if (cmp > 0)
+                    t = t.right;
+                else
+                    return t.setValue(value);
+            } while (t != null);
+        }
+        Entry<K,V> e = new Entry<>(key, value, parent);
+        if (cmp < 0)
+            parent.left = e;
+        else
+            parent.right = e;
+        fixAfterInsertion(e);
+        size++;
+        modCount++;
+        return null;
+    }
+```
+
+排序过程实质就是一颗红黑树
+
+**与HashMap不同，插入相同key的元素不会替换原来的元素，而是直接不会插入新元素**
+
+在第一次添加元素时，也会调用一次cmp方法。其主要目的是为了检验传入的自定义cmp方法是否合法，能够跑通。
+
+### 集合类总结
+
+- 一组对象：Collection接口
+
+  允许重复：List
+
+  - 增删多：LinkedList(底层实现为双向链表)
+  - 改查多：ArrayList(底层实现为Object类型的数组)
+
+  不允许重复：Set
+
+  - 无序：HashSet(底层为HashMap，维护一个table哈希表(即数组+链表+红黑树))
+  - 排序：TreeSet
+  - 插入和取出顺序一致：LinkedHashSet，(底层为LinkedHashMap，维护数组和一个双向链表)
+
+- 一组键值对：Map
+
+  键无序：HashMap
+
+  键排序：TreeMap
+
+  键插入和取出顺序一致：LinkedHashMap(底层为HashMap)
+
+  读取文件：Properties
+
+### Collections
+
+- 是一个操作Set，List，Map等集合的工具类
+
+- 提供了一系列静态方法对集合元素进行排序、查询和修改等操作
+
+- 常用方法
+
+  - sort：List
+
+  - binarySearch：List
+
+  - reverse：List
+
+  - shuffle：List
+
+  - swap：List
+
+  - fill：List
+
+  - copy：List
+
+  - min：Collecion
+
+  - max：Collection
+
+  - replaceAll：List
+
+  - frequency：Collection
+
+    返回指定集合中指定元素出现的次数
+
+  - copy：List
+
+```java
+public class Method {
+    public static void main(String[] args) {
+        List list = new ArrayList();
+
+        list.add(1);
+        list.add(2);
+        list.add(10);
+        list.add(3);
+        list.add(5);
+        list.add(7);
+
+        System.out.println(list);//[1, 2, 10, 3, 5, 7]
+
+        Collections.reverse(list);
+        System.out.println(list);//[7, 5, 3, 10, 2, 1]
+
+        Collections.sort(list);
+        System.out.println(list);//[1, 2, 3, 5, 7, 10]
+
+        Collections.sort(list, new Comparator() {
+            @Override
+            public int compare(Object o1, Object o2){
+                return (Integer)o2 - (Integer)o1;
+            }
+        });
+        System.out.println(list);//[10, 7, 5, 3, 2, 1]
+
+        Collections.shuffle(list);//对元素进行随机打乱
+        System.out.println(list);//[3, 5, 2, 1, 10, 7]
+    }
+}
+```
+
+# 泛型编程
+
+- 对集合中的数据类型进行约束
+- 遍历时不再需要进行强制类型转换
+- 可以保证只要程序能够通过编译，在运行时就不会发生类转换异常
+
+在类声明时，通过一个标识，表示类中某个属性的类型，或者是某个方法返回值的类型，或者是参数类型
+
+泛型究竟是什么类型在编译期间就确定了，因此如果编译期间类型不符合会直接报错
+
+- 泛型只能是引用类型，而不能是基本数据类型
+- 在指定泛型的具体类型后，可以传入给类型或子类类型
+- 在实际开发中，在创建集合时，构造器的尖括号中的类型可以省略
+- 泛型默认为Object
+
+泛型+OOP练习
+
+```java
+public class MyDate implements Comparable {
+    private int month;
+    private int day;
+    private int year;
+
+    public int getMonth() {
+        return month;
+    }
+
+    public void setMonth(int month) {
+        this.month = month;
+    }
+
+    public int getDay() {
+        return day;
+    }
+
+    public void setDay(int day) {
+        this.day = day;
+    }
+
+    public int getYear() {
+        return year;
+    }
+
+    public void setYear(int year) {
+        this.year = year;
+    }
+
+    @Override
+    public String toString() {
+        return "MyDate{" +
+                "month='" + month + '\'' +
+                ", day='" + day + '\'' +
+                ", year='" + year + '\'' +
+                '}';
+    }
+
+    public MyDate(int month, int day, int year) {
+        this.month = month;
+        this.day = day;
+        this.year = year;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        MyDate date = (MyDate)o;
+        if(this.year != date.year){
+            return this.year - date.year;
+        }
+        if(this.month != date.month){
+            return this.month - date.month;
+        }
+        return this.day - date.day;
+    }
+}
+
+public class Employee {
+    private String name;
+    private double sal;
+    private MyDate birthday;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public double getSal() {
+        return sal;
+    }
+
+    public void setSal(double sal) {
+        this.sal = sal;
+    }
+
+    public MyDate getBirthday() {
+        return birthday;
+    }
+
+    public void setBirthday(MyDate birthday) {
+        this.birthday = birthday;
+    }
+
+    @Override
+    public String toString() {
+        return "Employee{" +
+                "name='" + name + '\'' +
+                ", sal=" + sal +
+                ", birthday=" + birthday.toString() +
+                '}';
+    }
+
+    public Employee(String name, double sal, int year, int month, int day) {
+        this.name = name;
+        this.sal = sal;
+        this.birthday = new MyDate(month, day, year);
+    }
+}
+
+public class Run {
+    public static void main(String[] args) {
+        ArrayList<Employee> employees = new ArrayList<>();
+        employees.add(new Employee("jack", 3000, 1996, 12, 31));
+        employees.add(new Employee("lucy", 3000, 1996, 12, 31));
+        employees.add(new Employee("jack", 3000, 1996, 1, 11));
+
+        employees.sort(new Comparator<Employee>() {
+            @Override
+            public int compare(Employee o1, Employee o2) {
+                if (o1.getName().compareTo(o2.getName()) != 0) {
+                    return o1.getName().compareTo(o2.getName());
+                }
+                //写法一：将比较全部在这个Comporator写
+//                if (o1.getBirthday().getYear() != o2.getBirthday().getYear()) {
+//                    return o1.getBirthday().getYear() - o2.getBirthday().getYear();
+//                }
+//                if (o1.getBirthday().getMonth() != o2.getBirthday().getMonth()) {
+//                    return o1.getBirthday().getMonth() - o2.getBirthday().getMonth();
+//                }
+//                return o1.getBirthday().getDay() - o2.getBirthday().getDay();
+                //写法二：将日期的比较放在MyDate类中
+                return o1.getBirthday().compareTo(o2.getBirthday());
+            }
+        });
+
+        System.out.println(employees);
+    }
+}
+```
+
+## 自定义泛型
+
+- 普通成员可以使用泛型
+
+- 使用泛型的数组，不能初始化//就是不能new
+
+- 静态方法中不能使用类的泛型//因为静态方法不需要进行类的实例化就能使用，而类如果不实例化就没有指定泛型类型
+
+- 泛型类的创建，实在创建对象时确定的
+
+- 如果创建对象时没有指定类型，默认为Object
+
+- 使用泛型接口时要注意，由于接口中的所有成员属性都是静态的，所以不能使用泛型修饰属性
+
+- 可以在普通类中定义泛型方法
+
+  ```java
+  public <T, R> void hello(T t, R r);
+  hello("你好", "世界");//此时由编译器完成类型的推断
+  
+  public void hello(T t, R r);//这样的方法是使用了泛型，而不是泛型方法
+  ```
+
+## 泛型的继承和通配符
+
+- 泛型不具备继承性
+
+  ```java
+  List<Object> list = new ArrayList<String>();//错误
+  ```
+
+- <?>支持任意类型的泛型
+
+- <? extrends A>支持任意A类以及A类的子类
+
+- <? super A>支持任意A类还有A类的父类
+
+# 多线程基础
+
+## 线程的基本使用
+
+### 创建线程的基本方式
+
+- 继承Thread类，重写run方法
+- 实现Runnable接口，重写run方法
+
+![image-20240527162740549](./java基本语法.assets/image-20240527162740549.png)
+
+```java
+public class Inherit extends Thread{
+    //当一个类继承了线程类，该类就可以当作线程使用
+    //run方法从根上是从Runnable接口中来的
+    @Override
+    public void run(){//重写run方法
+        while(true){
+            System.out.println("I am a thread, thread name is " + Thread.currentThread().getName());
+            try {
+                Thread.sleep(1000);//单位为毫秒
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+}
+
+public class Run {
+    public static void main(String[] args) {
+        Inherit inherit = new Inherit();
+        inherit.start();//启动线程，会调用run方法
+        System.out.println("这个线程不会阻塞主线程的运行");
+    }
+}
+```
+
+```java
+public class Implement implements Runnable{
+
+    @Override
+    public void run(){
+        while(true){
+            System.out.println("hello");
+
+            try{
+                Thread.sleep(1000);
+            }catch(InterruptedException e){
+                e.printStackTrace();
+            }
+        }
+    }
+}
+
+public class Run {
+    public static void main(String[] args) {
+        Implement implement = new Implement();
+        //implement.start();//错误，没有start方法
+        Thread thread = new Thread(implement);//使用了代理模式的设计模式
+        thread.start();
+    }
+}
+```
+
+![image-20240527164325389](./java基本语法.assets/image-20240527164325389.png)
+
+这个线程不会阻塞主线程的运行，所有线程都结束后进程结束
+
+```java
+public synchronized void start() {
+        /**
+         * This method is not invoked for the main method thread or "system"
+         * group threads created/set up by the VM. Any new functionality added
+         * to this method in the future may have to also be added to the VM.
+         *
+         * A zero status value corresponds to state "NEW".
+         */
+        if (threadStatus != 0)
+            throw new IllegalThreadStateException();
+
+        /* Notify the group that this thread is about to be started
+         * so that it can be added to the group's list of threads
+         * and the group's unstarted count can be decremented. */
+        group.add(this);
+
+        boolean started = false;
+        try {
+            start0();
+            started = true;
+        } finally {
+            try {
+                if (!started) {
+                    group.threadStartFailed(this);
+                }
+            } catch (Throwable ignore) {
+                /* do nothing. If start0 threw a Throwable then
+                  it will be passed up the call stack */
+            }
+        }
+    }
+
+private native void start0();//本地native方法，由JVM调用，由c/c++实现
+```
+
+![image-20240527165214653](./java基本语法.assets/image-20240527165214653.png)
+
+实现Runnable接口的方式更加适合多个线程共享一个资源的情况，并且避免了单继承的限制
+
+![image-20240527171724331](./java基本语法.assets/image-20240527171724331.png)
+
+两个线程同时使用t3对象，有利于资源共享
+
+### 线程终止
+
+- 当线程完成任务后，会自动退出
+- 还可以通过使用变量来控制run方法退出的方式停止线程，即：**通知方式**
+
+### 线程常用方法
+
+![image-20240527173434952](./java基本语法.assets/image-20240527173434952.png)
+
+- run方法不会创建新的线程，start才会
+
+- 线程优先级的范围为1~10，数值越低，优先级越低
+
+- interrupt中断线程，但并没有真正的结束线程。一般用于中断正在休眠的线程，唤醒它
+
+  子线程会catch到这个中断，执行catch代码块中的业务逻辑
+
+- sleep，线程的静态方法，使当前线程休眠
+
+![image-20240527174358812](./java基本语法.assets/image-20240527174358812.png)
+
+join方法会阻塞当前线程
+
+### 用户线程和守护线程
+
+- 用户线程：也叫工作线程，当线程的任务执行完或通知方式结束
+
+- 守护线程：一般是为工作线程服务的，当该进程的所有用户线程都结束时，守护线程才会自动结束
+
+  常见的守护线程：GC垃圾回收机制
+
+将用户线程设置为守护线程（希望主线程结束时子线程自动退出）
+
+```java
+Thread t1 = new Thread();
+t1.setDaemon(true);
+```
+
+## 线程的七大状态
+
+- NEW
+
+  尚未启动的线程出于此状态
+
+- RUNNABLE
+
+  在JVM中执行的线程处于此状态。就绪态以及运行态都在这个状态中
+
+- WAITING
+
+  正在等待另一个线程执行特定动作的线程处于此状态
+
+- BLOCK
+
+  被阻塞等待监视器锁定的线程出于此状态
+
+- TIME_WAITING
+
+  正在等待另一个线程执行动作达到指定等待时间的线程出于此状态
+
+- TERMINATED
+
+  已退出的线程处于此状态
+
+- ```java
+  getState();//使用这个方法来获取线程状态
+  ```
+
+  
+
+![image-20240527180857459](./java基本语法.assets/image-20240527180857459.png)
+
+## 线程同步
+
+```java
+synchronized(对象){//只有得到该对象的锁时，才能执行下面的代码
+    //需要被同步的代码块
+}
+//synchronized还可以放在方法声明中，表示整个方法为同步方法
+public synchronized void m(String name){//同一时刻只能有一个线程执行该方法
+    //需要同步执行的代码块
+}
+```
+
+## 线程死锁
+
+## 释放锁
+
+释放锁的操作
+
+- 同步方法、同步代码块执行完毕，释放锁
+- 在执行同步代码块、同步方法中遇到break，return语句时，释放锁
+- 当线程在同步代码块、同步方法中出现了未处理的Error或Exception，导致异常结束，释放锁
+- 当线程在同步代码块、同步方法中执行了线程对象的wait方法时，当前线程暂停，释放锁
+
+不会释放锁的操作
+
+- sleep和yield方法不会释放锁
+
+- 其他线程调用suspend方法将该线程挂起，该线程不会释放锁
+
+  **该方法已被弃用**
+
+# I/O流
+
+p612
+
+
+

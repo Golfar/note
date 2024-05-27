@@ -155,14 +155,14 @@ xpath是一门在xml文档中查找信息的语言
 driver = webdriver.Chrome()
 driver.maximize_window()
 driver.get("https://www.baidu.com")
-driver.find_element(By.CSS_SELECTOR, '/html/body/div/div/div[3]/a').click()#绝对路径定位
+driver.find_element(By.XPATH, '/html/body/div/div/div[3]/a').click()#绝对路径定位
 
-driver.find_element(By.CSS_SELECTOR, '//input[@id="kw"]').click()#相对组合定位
-driver.find_element(By.CSS_SELECTOR, '//input[@class="s_ipt"]').click()#相对组合定位
-driver.find_element(By.CSS_SELECTOR, '//input[@class="s_ipt" and @name="wd" and @autocomplete="off"]').click()#相对组合定位
+driver.find_element(By.XPATH, '//input[@id="kw"]').click()#相对组合定位
+driver.find_element(By.XPATH, '//input[@class="s_ipt"]').click()#相对组合定位
+driver.find_element(By.XPATH, '//input[@class="s_ipt" and @name="wd" and @autocomplete="off"]').click()#相对组合定位
 
-driver.find_element(By.CSS_SELECTOR, '//span[text()="重庆医院"]').click()#文本相等定位
-driver.find_element(By.CSS_SELECTOR, '//span[contains(text(), "重庆医院")]').click()#文本包含定位
+driver.find_element(By.XPATH, '//span[text()="重庆医院"]').click()#文本相等定位
+driver.find_element(By.XPATH, '//span[contains(text(), "重庆医院")]').click()#文本包含定位
 ```
 
 ## iframe框架切换

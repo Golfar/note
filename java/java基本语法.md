@@ -4040,7 +4040,658 @@ public synchronized void m(String name){//同一时刻只能有一个线程执�
 
 # I/O流
 
-p612
+![image-20240528103737272](./java基本语法.assets/image-20240528103737272.png)
+
+![image-20240528103744645](./java基本语法.assets/image-20240528103744645.png)
+
+## 创建文件
+
+```java
+File(String pathname);
+File(File parent, String child);
+File(String parent, String child);
+```
+
+```java
+    public static void create1(){
+        String filePath = "C:\\create1.txt";
+        File file = new File(filePath);
+        try{
+            file.createNewFile();
+            System.out.println("文件创建成功");
+        }catch(IOException e){
+            System.out.println(e);
+        }
+    }
+
+    public static void create2(){
+        File parentFile = new File("C:\\");
+        String fileName = "create2.txt";
+        File file = new File(parentFile, fileName);
+        try{
+            file.createNewFile();
+            System.out.println("文件创建成功");
+        }catch(IOException e){
+            System.out.println(e);
+        }
+    }
+
+    public static void create3(){
+        String parentPath = "C:\\";
+        String fileName = "create3.txt";
+        File file = new File(parentPath, fileName);
+        try{
+            file.createNewFile();
+            System.out.println("文件创建成功");
+        }catch(IOException e){
+            System.out.println(e);
+        }
+    }
+```
+
+## 获取文件信息
+
+![image-20240528104615128](./java基本语法.assets/image-20240528104615128.png)
+
+```java
+File file = new File("C:\\create1.txt");
+file.getName();//获取文件名
+file.getAbsolutePath();//获取文件绝对路径
+file.getParent();//得到文件的父级目录
+file.length();//得到文件大小，单位为字节
+file.exists();//文件是否存在
+file.isFile();//是否为一个文件
+file.isDirctory();//是否为一个目录
+```
+
+## 目录的操作和文件删除
+
+```java
+file.delete();//删除文件或空目录，成功返回true，失败返回false
+file.mkdir();//创建一级目录
+file.mkdirs();//创建多级目录
+```
+
+## I/O流分类
+
+`java.io`包下提供了各种“流”类和接口，用以获取不同种类的数据
+
+- 按操作数据单位不同分为：字节流，字符流
+- 桉数据流向不同分为：输入流、输出流
+- 按流的角色不同分为：节点流，包装流/处理流
+
+![image-20240528105740335](./java基本语法.assets/image-20240528105740335.png)
+
+由这四个类派生出来的子类名称都是以其父类名作为子类名后缀
+
+**均为抽象类，不能直接实例化**
+
+![image-20240528110017541](./java基本语法.assets/image-20240528110017541.png)
+
+## 常用类
+
+### InputStream
+
+![image-20240528110356267](./java基本语法.assets/image-20240528110356267.png)
+
+#### FileInputStream
+
+![image-20240528110448084](./java基本语法.assets/image-20240528110448084.png)
+
+```java
+public void readFile1() {//每次读取一个字节
+        String filePath = "d:\\hello.txt";
+        int readByte = 0;
+        FileInputStream fileInputStream = null;
+        try {
+            fileInputStream = new FileInputStream(filePath);
+            while((readByte = fileInputStream.read()) != -1){//返回-1表示读到文件末尾
+                System.out.print((char) readByte);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                fileInputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+public void readFile2() {//每次都一buffer的字节
+        String filePath = "d:\\hello.txt";
+        byte[] buffer = new byte[8];
+        FileInputStream fileInputStream = null;
+        int len = 0;
+        try {
+            fileInputStream = new FileInputStream(filePath);
+            while((len = fileInputStream.read(buffer)) != -1){//返回-1表示读到文件末尾，否则返回实际读取到的字节数
+                System.out.print(new String(buffer, 0, len));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                fileInputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+```
+
+### OutputStream
+
+#### FileOutputStream
+
+![image-20240528112735001](./java基本语法.assets/image-20240528112735001.png)
+
+```java
+public void writeFile(){
+        String path = "D:\\a.txt";
+        FileOutputStream fileOutputStream = null;
+
+        try {
+            fileOutputStream = new FileOutputStream(path, true);
+            //fileOutputStream = new FileOutputStream(path);
+
+            //方法一
+            fileOutputStream.write('H');
+
+            //方法二
+            String str = "hello World!";
+            fileOutputStream.write(str.getBytes());
+
+            //方法三
+            fileOutputStream.write(str.getBytes(), 0, 3);
+            //三种方式均会覆盖写，不是追加写
+            //对于同一个流是追加
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                fileOutputStream.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+```
+
+### Reader
+
+![image-20240528115229057](./java基本语法.assets/image-20240528115229057.png)
+
+#### FileReader
+
+```java
+FileReader(String File);
+read();//读取单个字符，返回该字符，读到文件末尾返回-1
+read(char[]);//读取多个字符到数组，返回字符长度，读到文件末尾返回-1
+```
+
+```java
+public class FileReader_ {
+    public static void main(String[] args) {
+        String filePath = "d:\\hello.txt";
+        char[] buffer = new char[8];
+        FileReader fileReader = null;
+        int len = 0;
+        try {
+            fileReader = new FileReader(filePath);
+            while((len = fileReader.read(buffer)) != -1){//返回-1表示读到文件末尾，否则返回实际读取到的字节数
+                System.out.print(new String(buffer, 0, len));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                fileReader.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+```
+
+### Writer
+
+![image-20240528115838675](./java基本语法.assets/image-20240528115838675.png)
+
+#### FileWriter
+
+```java
+FileWriter(String file);
+FileWriter(String file, boolean append);
+write(int);//写入单个字符
+write(char[]);//写入指定数组
+write(char[], off, len);//写入数组的指定部分
+write(String);//写入整个字符串
+write(String, off, len);//写入字符串指定部分
+
+//FileWriter使用后，必须要关闭或者刷新flush，将缓冲区内容确实写入到文件。否则写入不到指定的文件
+//底层是FileOutputStream，只有调用close或flush方法，才会进行write写操作
+```
+
+```java
+public class FileWriter_ {
+    public static void main(String[] args) {
+        String content = "hello world!";
+        String path = "d:\\hi.txt";
+        FileWriter fileWriter = null;
+        try {
+            fileWriter = new FileWriter(path);
+            fileWriter.write(content);
+            fileWriter.flush();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if(fileWriter != null){
+                try {
+                    fileWriter.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
+}
+```
+
+### 节点流和处理流
+
+- 节点流是指可以从一个特定的数据源读写数据的流，如FileReader，FileWriter等
+
+- 处理流，也称包装流，是指在连接已经存在的流（节点流或处理流）值上，为程序提供更为强大的读写功能，如BufferedReader，BufferedWriter
+
+  实质就是对节点流进行了一层包装，使其功能更加强大。
+
+![image-20240528123822464](./java基本语法.assets/image-20240528123822464.png)
+
+![image-20240528124139991](./java基本语法.assets/image-20240528124139991.png)
+
+比如BufferedReader中存在一个Reader成员，即可以封装一个节点流
+
+节点流和处理流的区别和联系
+
+- 节点流是底层流，直接跟数据源相接
+- 处理流包装节点流，既可以消除不同节点流的实现差异，也可以提供更方便的方法来完成IO
+- 处理流使用了修饰器设计模式，不会直接与数据源相连
+- 处理流相比于节点流的优点主要体现在：
+  - 性能的提高：增加缓冲的方式来提高IO的效率
+  - 操作的便捷：处理流可能提供了一系列便捷的方法来一次输入输出大批量的数据
+
+#### BufferedReader
+
+```java
+public class BufferedReader_ {
+    public static void main(String[] args) throws Exception{
+
+        String path = "d:\\hello.txt";
+        BufferedReader bufferedReader = new BufferedReader(new FileReader(path));
+        String line;
+        while((line = bufferedReader.readLine()) != null){//按行读取，返回null时表示读取完毕
+            System.out.println(line);
+        }
+
+        bufferedReader.close();//底层会自动关闭FileReader
+    }
+}
+```
+
+#### BufferedWriter
+
+```java
+public class BufferedWriter_ {
+    public static void main(String[] args) throws Exception{
+        String path = "d:\\hello.txt";
+        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(path, true));
+        bufferedWriter.write("hello world!\n");
+        bufferedWriter.write("郭峰\n");
+        bufferedWriter.write("hahahaha\n");
+
+        bufferedWriter.close();
+    }
+}
+
+//BufferedWriter仍然需要主动close或flush才能真正的写入文件
+```
+
+#### BufferedInputStream
+
+![image-20240528131937837](./java基本语法.assets/image-20240528131937837.png)
+
+使用的是从FilterInputStream继承下来的InputStream对象
+
+![image-20240528132134487](./java基本语法.assets/image-20240528132134487.png)
 
 
 
+#### BufferedOutputStream
+
+![image-20240528132151675](./java基本语法.assets/image-20240528132151675.png)
+
+![image-20240528132220068](./java基本语法.assets/image-20240528132220068.png)
+
+### 对象处理流
+
+ObjectInputStream和ObjectOutputStream
+
+能够将**基本数据类型**和**对象**进行**序列化**和**反序列化**
+
+- 序列化就是在保存数据时，保存数据的值和数据类型
+
+- 反序列化就是在恢复数据时，恢复数据的值和数据类型
+
+- 需要让某个对象支持序列化机制，则必须让其类是可序列化的
+
+  类是可序列化的，则其必须实现`Serializable`或者`Externalizable`两个接口之一
+
+  `Serializable`是一个标记接口，里面没有任何方法
+
+#### ObjectInputStream
+
+![image-20240528150049663](./java基本语法.assets/image-20240528150049663.png)
+
+```java
+public class ObjectInputStream_ {
+    public static void main(String[] args) throws Exception{
+        String filePath = "d:\\object.dat";
+        ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(filePath));
+        //反序列化顺序需要和序列化顺序一致
+        System.out.println(objectInputStream.readInt());
+        System.out.println(objectInputStream.readBoolean());
+        System.out.println(objectInputStream.readChar());
+        System.out.println(objectInputStream.readDouble());
+        System.out.println(objectInputStream.readUTF());
+        System.out.println(objectInputStream.readObject());
+
+        objectInputStream.close();
+    }
+}
+```
+
+
+
+#### ObjectOutputStream
+
+![image-20240528150142166](./java基本语法.assets/image-20240528150142166.png)
+
+```java
+public class ObjectOutputStream_ {
+    public static void main(String[] args) throws Exception{
+        String filePath = "d:\\object.dat";
+
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream(filePath));
+
+        objectOutputStream.write(100);
+        objectOutputStream.writeBoolean(true);
+        objectOutputStream.writeChar('H');
+        objectOutputStream.writeDouble(9.5);
+        objectOutputStream.writeUTF("郭峰");
+
+        objectOutputStream.writeObject(new Dog("jack", 10));
+
+        objectOutputStream.close();
+    }
+}
+```
+
+#### 总结
+
+- 读写顺序一致
+- 需要序列化和反序列化的类，要实现`Serializable`接口
+- 序列化的类中建议添加`SerialVersionUID`，序列化版本号，目的是提高序列化的兼容性
+- 类中`static`和`transient`修饰的成员不会进行序列化
+- 类中的属性的类型也需要实现序列化
+- 序列化具有可继承性
+
+## 标准输入输出流
+
+![image-20240528153030576](./java基本语法.assets/image-20240528153030576.png)
+
+### System.in
+
+运行类型为BufferedInputStream
+
+### System.out
+
+运行类型为PrintStream
+
+## 转换流
+
+字节流转换为字符流
+
+字节流+编码格式=字符流
+
+### InputStreamReader
+
+![image-20240528154540572](./java基本语法.assets/image-20240528154540572.png)
+
+### OutputStreamWriter
+
+![image-20240528154706146](./java基本语法.assets/image-20240528154706146.png)
+
+## 打印流
+
+只有输出流，没有输入流
+
+### PrintStream
+
+![image-20240528155202270](./java基本语法.assets/image-20240528155202270.png)
+
+![image-20240528155236768](./java基本语法.assets/image-20240528155236768.png)
+
+### PrintWriter
+
+![image-20240528155318838](./java基本语法.assets/image-20240528155318838.png)
+
+![image-20240528155333691](./java基本语法.assets/image-20240528155333691.png)
+
+## Properties
+
+![image-20240528160059750](./java基本语法.assets/image-20240528160059750.png)
+
+# 网络编程
+
+## InetAddress
+
+![image-20240528161807459](./java基本语法.assets/image-20240528161807459.png)
+
+```java
+public class Inet {
+    public static void main(String[] args) throws Exception {
+        InetAddress localHost = InetAddress.getLocalHost();
+        System.out.println(localHost);//Loong/192.168.3.28
+
+        InetAddress loong = InetAddress.getByName("Loong");
+        System.out.println(loong);//Loong/192.168.3.28
+
+        InetAddress baidu = InetAddress.getByName("www.baidu.com");
+        System.out.println(baidu);//www.baidu.com/110.242.68.3
+
+        String address = loong.getHostAddress();
+        System.out.println(address);//192.168.3.28
+
+        String hostName = baidu.getHostName();
+        System.out.println(hostName);//www.baidu.com
+    }
+}
+```
+
+## Socket
+
+- 套接字开发网络应用程序被广泛使用
+- 通信两端都要有socket
+- socket允许程序把网络连接当成一个流，数据在两个socket之间传输
+- 一般主动发起通信的应用程序为客户端，等待通信请求的为服务端
+
+![image-20240528163118722](./java基本语法.assets/image-20240528163118722.png)
+
+### TCP
+
+```java
+public class Server {
+    public static void main(String[] args) throws Exception{
+
+        //在本机9999端口上监听，等待连接
+        //需要本机9999端口没有被占用
+        ServerSocket serverSocket = new ServerSocket(9999);
+
+        //等待客户端请求连接，这条语句会阻塞，等待连接
+        //如果有客户端连接，就会返回一个Socket对象
+        System.out.println("在9999端口等待连接");
+        Socket socket = serverSocket.accept();
+
+        System.out.println("socket = " + socket);
+
+        //会等待客户端写入数据后再继续执行，否则会阻塞
+        InputStream inputStream = socket.getInputStream();
+        byte[] buffer = new byte[1024];
+        int len = 0;
+        while((len = inputStream.read(buffer)) != -1){
+            System.out.println(new String(buffer, 0, len));
+        }
+
+        OutputStream outputStream = socket.getOutputStream();
+        outputStream.write("hello client".getBytes());
+        socket.shutdownOutput();//标记本次输出完成
+        inputStream.close();
+        outputStream.close();
+        socket.close();
+    }
+}
+
+public class Client {
+    public static void main(String[] args) throws Exception{
+
+        //连接本机的9999端口，如果连接成功，返回socket对象
+        Socket socket = new Socket(InetAddress.getLocalHost(), 9999);
+        System.out.println("客户端socket=" + socket);
+
+        OutputStream outputStream = socket.getOutputStream();
+        outputStream.write("hello server".getBytes());
+        socket.shutdownOutput();//标记本次输出完成
+        InputStream inputStream = socket.getInputStream();
+        byte[] buffer = new byte[1024];
+        int len = 0;
+        while((len = inputStream.read(buffer)) != -1){
+            System.out.println(new String(buffer, 0, len));
+        }
+        outputStream.close();
+        inputStream.close();
+        socket.close();
+    }
+}
+```
+
+- 如果采用字符流，则可以使用`writer.newLine()`方式写入结束标记，但是对方必须使用`reader.readLine()`来读取数据
+
+### UDP
+
+- DatagramSocket和DatagramPacket实现了基于UDP协议的网络程序
+- UDP数据报提供数据报套接字DatagramSocket发送和接收，但是系统不保证UDP数据报一定能够送达，也不确定什么时候可以送到
+- DatagramPacket封装了UDP数据报，在数据报中包含了发送端的IP地址和端口号以及接收端的IP地址和端口号
+- 通信双方无需建立连接
+
+![image-20240528184129720](./java基本语法.assets/image-20240528184129720.png)
+
+```java
+public class Server {
+    public static void main(String[] args) throws Exception{
+        DatagramSocket datagramSocket = new DatagramSocket(9999);
+        byte[] buf = new byte[1024];//UDP一个数据报最大64KB
+        DatagramPacket datagramPacket = new DatagramPacket(buf, buf.length);
+        datagramSocket.receive(datagramPacket);//当接收到数据时，会将其填充到dataPacket中。如果没有数据，会阻塞
+
+        System.out.println(new String(datagramPacket.getData(), 0, datagramPacket.getLength()));
+
+        byte[] msg = "好的，明天见".getBytes();
+        ;
+        datagramSocket.send(new DatagramPacket(msg, msg.length, datagramPacket.getAddress(), datagramPacket.getPort()));
+        datagramSocket.close();
+    }
+}
+
+public class Client {
+    public static void main(String[] args) throws Exception{
+
+        DatagramSocket datagramSocket = new DatagramSocket(9998);//准备在9998端口接收数据
+        byte[] msg = "你好 今天吃火锅".getBytes();
+        DatagramPacket datagramPacket = new DatagramPacket(msg, msg.length, InetAddress.getLocalHost(), 9999);
+        datagramSocket.send(datagramPacket);
+
+        byte[] buf = new byte[1024];
+        DatagramPacket datagramPacket1 = new DatagramPacket(buf, buf.length);
+        datagramSocket.receive(datagramPacket1);
+        System.out.println(new String(datagramPacket1.getData(), 0, datagramPacket1.getLength()));
+
+        datagramSocket.close();
+    }
+}
+```
+
+# 反射
+
+```java
+public class Sample {
+    public static void main(String[] args) throws Exception{
+        Properties properties = new Properties();
+        properties.load(new FileInputStream("C:\\Loong\\learnJava\\learnJava\\learnJava\\com\\learn\\reflect\\example\\re.properties"));
+        String className = properties.get("class").toString();
+        String method = properties.get("method").toString();
+
+        Class cls = Class.forName(className);
+
+        Object o = cls.newInstance();//获得一个加载实例
+        System.out.println(o.getClass());
+        Method md = cls.getMethod(method);//获得这个类的方法
+        md.invoke(o);//通过方法对象来实现调用方法
+
+        Field ageField = cls.getField("age");//获得age属性字段
+        System.out.println(ageField.get(o));//通过加载实例，来获取age大小
+
+        Constructor constructorNoPara = cls.getConstructor();//返回无参构造器
+        Constructor constructor = cls.getConstructor(String.class, int.class);//返回带参数的构造器
+    }
+}
+```
+
+在不修改源码的情况下，来扩展功能
+
+- 允许程序在执行期间借助ReflectionAPI取得任何类的内部信息（成员变量，构造器，成员方法等），并且能够操作对象的属性以及方法。
+- 加载完类之后，在堆中就产生了一个Class类型的对象（一个类只有一个Class对象），这个对象包含了类的完整结构信息。通过这个对象得到类的结构。这个对象就像一个镜子，通过这个镜子可以看到类的结构，所以称之为反射
+
+![image-20240528204751343](./java基本语法.assets/image-20240528204751343.png)
+
+通过反射机制，可以完成：
+
+- 在运行时判断任意一个对象所属的类
+- 在运行时构造任意一个类的对象
+- 在运行时得到任意一个类所具有的成员变量和方法
+- 在运行时调用任意一个对象的成员变量和方法
+- 生成动态代理
+
+## 反射相关的主要类
+
+- java.lang.Class
+
+  代表一个类，表示某个类在加载后在堆中的对象
+
+- java.lang.reflect.Mehtod
+
+  代表类的方法
+
+- java.lang.reflect.Field
+
+  代表类的成员变量
+
+- java.lang.reflect.Constructor
+
+  代表类的构造方法
+
+P715

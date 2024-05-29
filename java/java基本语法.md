@@ -4694,4 +4694,265 @@ public class Sample {
 
   代表类的构造方法
 
-P715
+## 反射的优缺点
+
+- 优点
+
+  可以动态的创建和适用对象，使用灵活
+
+- 缺点
+
+  基本是解释执行，对执行速度有影响
+
+## 反射调用优化
+
+### 关闭访问检查
+
+- `Method`、`Filed`、`Constructor`对象都有`setAccess()`方法
+- `setAccess()`的作用是启动和禁用安全检查
+- 作用不大
+
+## Class
+
+![image-20240529132022163](./java基本语法.assets/image-20240529132022163.png)
+
+- Class也是类
+
+- Class类不是new出来的，而是JVM中的类加载器`ClassLoader`中的`loadClass()`生成的
+
+- 对于某个类的Class类对象，在内存中只有一份，因为类只加载一次
+
+- 每个类的实例都会存储自己是由哪个Class实例所生成的
+
+- 通过一个Class实例可以完整的得到该类的完整结构
+
+  ![image-20240529132845614](./java基本语法.assets/image-20240529132845614.png)
+
+- Class对象存放在堆中
+
+- 类的字节码二进制数据是存放在方法区的，也成为这个类的元数据
+
+```java
+public class Run {
+    public static void main(String[] args) throws Exception{
+        String classPath = "com.learn.reflect.class_.Car";
+        Class<?> cls = Class.forName(classPath);
+        System.out.println(cls);//class com.learn.reflect.class_.Car
+        System.out.println(cls.getClass());//class java.lang.Class
+
+        //包名
+        System.out.println(cls.getPackage().getName());//com.learn.reflect.class_
+
+        //类名
+        System.out.println(cls.getName());//com.learn.reflect.class_.Car
+
+        //生成实例
+        Car car = (Car)cls.newInstance();//
+        System.out.println(car);//Car{branch='迈巴赫', price=1500000, color='黑色'}
+
+        //获取属性
+        System.out.println(car.branch);//迈巴赫
+        Field branch = cls.getField("branch");
+
+        //无法获取私有属性
+        System.out.println(branch.get(car));//迈巴赫
+
+        //修改属性值
+        branch.set(car, "宝马");
+        System.out.println(branch.get(car));//宝马
+
+        //使用方法
+        Method hi = cls.getMethod("hi");//hi
+        hi.invoke(car);
+
+        //获取所有属性
+        Field[] fields = cls.getFields();
+        for (Field field : fields) {
+            System.out.print(field.getName() + field.get(car));//branch宝马price1500000color黑色
+        }
+    }
+}
+```
+
+### 获取Class类对象
+
+1. 前提：已知一个类的全类名
+
+   通过`forName()`方法获取，可能会抛出`ClassNotFoundException`异常
+
+   多用于配置文件，读取类路径来加载类
+
+2. 前提：已知具体的类，通过类的class来获取
+
+   ```java
+   Class cls = Cat.class
+   ```
+
+   应用场景：多用于参数传递
+
+3. 前提：已知某个类的实例，调用该实例的`getClass()`方法获取Class对象
+
+4. 通过类加载器获得
+
+5. 基本数据类型通过.class获取
+
+6. 基本数据类型的包装类通过.TYPE获得
+
+```JAVA
+public class GetClass {
+    public static void main(String[] args) throws Exception{
+
+        //1.
+        Class<?> car = Class.forName("Car");
+
+        //2.
+        Class<Car> cls = Car.class;
+
+        //3.
+        Car car1 = new Car();
+        Class<? extends Car> cls2 = car1.getClass();
+
+        //4.
+        ClassLoader classLoader = car1.getClass().getClassLoader();
+        Class<?> cls3 = classLoader.loadClass("Car");
+
+        //5.
+        Class<Integer> integerClass = int.class;
+
+        //6.
+        Class<Integer> type = Integer.TYPE;
+    }
+}
+```
+
+### 有Class对象的类
+
+- 外部类，成员内部类，静态内部类，局部内部类，匿名内部类
+- 接口
+- 数组
+- 枚举
+- 注解
+- 基本数据类型
+- void
+
+## 类加载
+
+反射机制是Java实现动态语言的关键，也就是通过反射实现了类的动态加载
+
+- 静态加载：编译时加载相关的类，如果没有则报错//比如 new Dog属于静态加载，在编译时就会加载，没有就会报错
+- 动态加载：运行时加载需要的类，如果运行时不用该类，则不报错//反射数据动态加载，只有运行到代码时才会加载该类
+
+### 类加载的时机
+
+- 创建对象时(new)//静态加载
+- 子类被加载时
+- 调用类中的静态成员时
+- 反射
+
+### 类加载的阶段
+
+![image-20240529151502163](./java基本语法.assets/image-20240529151502163.png)
+
+![image-20240529151736030](./java基本语法.assets/image-20240529151736030.png)
+
+- 加载
+
+  将字节码从不同的数据源（可能是class文件，也可能是jar包，甚至是网络）转化为二进制字节流加载到内存中，并生成一个代表该类的`java.lang.Class`对象。二进制数据存放在方法区
+
+- 验证
+
+  确保Class文件的字节流中包含的信息符合当前虚拟机的要求，不会危害虚拟机自身的安全
+
+  文件格式验证，元数据验证，字节码验证和符号引用验证
+
+  可以使用-Xverify:none参数来关闭大部分的类验证措施，缩短虚拟机类加载的时间
+
+- 准备
+
+  JVM会在该阶段对**静态**变量分配内存并**默认**初始化（0，null，false等），即使它们有初值。这些变量所使用的内存都将在方法区中进行分配。常量变量会直接赋初值。
+
+- 解析
+
+  将常量池的符号引用替换为直接引用
+
+- 初始化
+
+  才真正执行类中定义的java代码。此阶段是执行`<client>()`方法的过程
+
+  `<client>()`由编译器按语句**在源文件中出现的顺序**，依次自动收集类中的所有**静态变量**的赋值动作和**静态代码块**中的语句，并进行合并。
+
+  JVM会保证一个类的`<client>()`方法在多线程环境中被正确的加锁，同步。
+
+## 类的结构信息
+
+### Class
+
+![image-20240529154637867](./java基本语法.assets/image-20240529154637867.png)
+
+### Field
+
+![image-20240529155508865](./java基本语法.assets/image-20240529155508865.png)
+
+### Method
+
+![image-20240529155547532](./java基本语法.assets/image-20240529155547532.png)
+
+### Constructor
+
+![image-20240529155533747](./java基本语法.assets/image-20240529155533747.png)
+
+## 通过反射创建对象
+
+1. 调用类中public修饰的无参构造器
+
+2. 调用类中的指定构造器
+
+3. Class相关方法
+
+   `newInstance()`调用类中的无参构造器，获取对应类的对象
+
+   `getConstructor()`根据参数列表，获取对应的构造器对象
+
+   `getDecalaredConstructor()`根据参数列表，获取对应的构造器对象
+
+4. Constructor相关方法
+
+   `setAccessible()`爆破，可以访问private构造器
+
+   `newInstance()`调用构造器
+
+```java
+public class CreateInstance {
+    public static void main(String[] args) throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
+        Class<?> cat = Class.forName("com.learn.reflect.Cat");
+
+        //调用无参构造器创建实例
+        Object object = cat.newInstance();
+        System.out.println("object = " + object);//object = Cat{name='Tom', color='蓝色'}
+
+        //调用public构造器创建实例
+        Constructor<?> constructor = cat.getConstructor(String.class, String.class);
+        Object hu = constructor.newInstance("桃子", "黑色");//桃子=Cat{name='桃子', color='黑色'}
+        System.out.println("桃子=" + hu);
+
+        //调用非public构造器创建实例
+        Constructor<?> declaredConstructor = cat.getDeclaredConstructor(String.class);
+        declaredConstructor.setAccessible(true);//爆破，可以访问private构造器
+        Object object1 = declaredConstructor.newInstance("jerry");
+        System.out.println("jerry=" + object1);//jerry=Cat{name='jerry', color='黑色'}
+    }
+}
+```
+
+## 通过反射访问属性
+
+1. 根据属性名获取Field对象
+2. 爆破
+3. 访问
+4. 静态属性，set和get中的参数可以为null
+
+```
+
+```
+
+P727

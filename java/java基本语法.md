@@ -4951,8 +4951,54 @@ public class CreateInstance {
 3. 访问
 4. 静态属性，set和get中的参数可以为null
 
+```java
+public class GetField {
+    public static void main(String[] args) throws ClassNotFoundException, NoSuchFieldException, InstantiationException, IllegalAccessException {
+        Class<?> cat = Class.forName("com.learn.reflect.Cat");
+        Object object = cat.newInstance();
+
+        //获得全部public属性
+        Field[] fields = cat.getFields();
+        for (Field field : fields) {
+            System.out.print(field);
+        }
+        System.out.println("\n");
+
+        //获得非public属性
+        Field declaredFields = cat.getDeclaredField("name");
+        Field age = cat.getField("age");
+        declaredFields.setAccessible(true);
+        System.out.println(declaredFields.get(object));//Tom
+        declaredFields.set(object, "桃子");//
+        System.out.println(declaredFields.get(object));//桃子
+        System.out.println(age.get(null));//18
+    }
+}
 ```
 
-```
+## 通过反射访问方法
 
-P727
+1. 根据方法名和参数列表获取Method方法对象
+2. 爆破
+3. 访问
+4. 静态方法，参数可以为null
+
+# JDBC
+
+## 概述
+
+- 为访问不同的数据库提供了统一的接口
+- 可以使用JDBC操作任何提供了JDBC支持的数据库系统
+- 相关类和接口在java.sql和javax.sql中
+
+## 快速入门
+
+### JDBC程序编写步骤
+
+1. 注册驱动
+2. 获取连接
+3. 执行业务
+4. 释放资源
+
+P823
+

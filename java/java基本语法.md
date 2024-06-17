@@ -5269,5 +5269,247 @@ public class Prepared {
 
 ### C3P0
 
-p843
+```java
+public class C3p0 {
+
+    //方式1：相关参数在程序中指定
+    public void test1() throws Exception {
+
+        //1.创建数据源独享
+        ComboPooledDataSource comboPooledDataSource = new ComboPooledDataSource();
+
+        //2.通过配置文件获取相关连接信息
+        Properties properties = new Properties();
+        properties.load(Files.newInputStream(Paths.get("com/learn/jdbc/jdbcInfo.properties")));
+        String driver = properties.getProperty("driver");
+        String user = properties.getProperty("user");
+        String password = properties.getProperty("password");
+        String url = properties.getProperty("url");
+
+        //3.给数据源设置相关参数
+        comboPooledDataSource.setDriverClass(driver);
+        comboPooledDataSource.setJdbcUrl(url);
+        comboPooledDataSource.setUser(user);
+        comboPooledDataSource.setPassword(password);
+        comboPooledDataSource.setInitialPoolSize(10);
+        comboPooledDataSource.setMaxPoolSize(50);
+
+        //4.获取连接
+        Connection connection = comboPooledDataSource.getConnection();
+        connection.close();//
+    }
+
+    //方法2：使用配置文件来配置参数
+    public void test2() throws Exception{
+
+        //1.将c3p0.config.xml配置文件放到src目录下
+        ComboPooledDataSource comboPooledDataSource = new ComboPooledDataSource("配置文件中的数据源名称");
+        Connection connection = comboPooledDataSource.getConnection();
+        
+    }
+}
+```
+
+### Druid
+
+```java
+public class Druid {
+    public void test() throws Exception{
+        Properties properties = new Properties();
+        properties.load(Files.newInputStream(Paths.get("lujing")));
+        DataSource dataSource = DruidDataSourceFactory.createDataSource(properties);
+
+    }
+}
+```
+
+## Apache-DBUtils
+
+- 关闭connection后，resultSet结果集无法使用
+
+- resultSet不利于数据管理
+
+  ![image-20240617143157078](./java基本语法.assets/image-20240617143157078.png)
+
+- commons-dbutils是apache组织提供的一个开源的JDBC工具类库，是对JDBC的封装
+
+- DBUtils类
+
+  - QueryRunner：：封装了sql执行，是线程安全的。可以实现增删改查
+
+  - ResultSetHandler接口：用于处理java.sql.ResultSet，将数据按照要求转换为另一种形式
+
+    ![image-20240617144057265](./java基本语法.assets/image-20240617144057265.png)
+
+```java
+public class DBUtils {
+
+    public static void main(String[] args) throws Exception{
+        DBUtils dbUtils = new DBUtils();
+        dbUtils.testDML();
+    }
+
+    public void test() throws Exception{
+        Properties properties = new Properties();
+        properties.load(Files.newInputStream(Paths.get("com/learn/jdbc/druid.properties")));
+        DataSource dataSource = DruidDataSourceFactory.createDataSource(properties);
+
+        Connection connection = dataSource.getConnection();
+        QueryRunner queryRunner = new QueryRunner();
+        String sql = "select * from actor where id >= ?";
+        String sqlSingle = "select * from actor where id = ?";
+
+        //query方法执行一个查询，返回ResultSet，将其封装到一个ArrayList中
+        //new BeanListHandler<>(Actor.class)：将ResultSet中的结果转换为Actor对象；使用反射机制去获取Actor类的属性区封装
+        List<Actor> actorList = queryRunner.query(connection, sql, new BeanListHandler<>(Actor.class), 1);
+        Actor query = queryRunner.query(connection, sqlSingle, new BeanHandler<>(Actor.class), 1);//返回单个记录
+
+        for (Actor actor : actorList) {
+            System.out.println(actor);
+        }
+
+        connection.close();
+    }
+
+    public void testDML() throws Exception{
+        Properties properties = new Properties();
+        properties.load(Files.newInputStream(Paths.get("com/learn/jdbc/druid.properties")));
+        DataSource dataSource = DruidDataSourceFactory.createDataSource(properties);
+
+        Connection connection = dataSource.getConnection();
+        QueryRunner queryRunner = new QueryRunner();
+        String sqlUpdate = "update actor set name = ? where id = ?";
+        String sqlInsert = "insert into actor values (null, ?, ?, ?, ?)";
+        String sqlDelete = "delete from actor where name = ?";
+
+        int affectRow = queryRunner.update(connection, sqlUpdate, "张三丰", "2");
+        System.out.println(affectRow);
+
+        affectRow = queryRunner.update(connection, sqlInsert, "林青霞", "女", "1966-10-10", "116");
+        System.out.println(affectRow);
+
+        affectRow = queryRunner.update(connection, sqlDelete, "张三丰");
+        System.out.println(affectRow);
+
+        connection.close();
+    }
+}public class DBUtils {
+
+    public static void main(String[] args) throws Exception{
+        DBUtils dbUtils = new DBUtils();
+        dbUtils.test();
+    }
+
+    public void test() throws Exception{
+        Properties properties = new Properties();
+        properties.load(Files.newInputStream(Paths.get("com/learn/jdbc/druid.properties")));
+        DataSource dataSource = DruidDataSourceFactory.createDataSource(properties);
+
+        Connection connection = dataSource.getConnection();
+        QueryRunner queryRunner = new QueryRunner();
+        String sql = "select * from actor where id >= ?";
+
+        //query方法执行一个查询，返回ResultSet，将其封装到一个ArrayList中
+        //new BeanListHandler<>(Actor.class)：将ResultSet中的结果转换为Actor对象；使用反射机制去获取Actor类的属性区封装
+        List<Actor> actorList = queryRunner.query(connection, sql, new BeanListHandler<>(Actor.class), 1);
+
+        for (Actor actor : actorList) {
+            System.out.println(actor);
+        }
+
+        connection.close();
+    }
+}
+```
+
+底层就是对JDBC的封装，将ResultSet封装到了ArrayList
+
+底层会用Statement和ResultSet来获得结果，并在方法结束之前将其关闭
+
+![image-20240617151858126](./java基本语法.assets/image-20240617151858126.png)
+
+## BasicDAO
+
+Apache-DBUtils简化了JDBC的开发，但还有不足
+
+- sql语句固定，不能通过参数传入，通用性不好
+- 对于select操作，如果有返回值，返回类型不固定，需要使用泛型
+- 将来的表很多，业务需求复杂，不可能只靠一个java类完成
+
+![image-20240617152336939](./java基本语法.assets/image-20240617152336939.png)
+
+- DAO：data access object
+- 在BasicDAO的基础上，实现一张表对应一个DAO，更好的完成功能
+
+```java
+package com.learn.dao.dao;
+
+import com.learn.dao.utils.JdbcByDruidUtils;
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.BeanHandler;
+import org.apache.commons.dbutils.handlers.BeanListHandler;
+import org.apache.commons.dbutils.handlers.ScalarHandler;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.List;
+
+public class BasicDAO<T> {
+
+    private QueryRunner qr = new QueryRunner();
+
+    public int update(String sql, Object... param){
+        Connection conn = null;
+        try {
+            conn = JdbcByDruidUtils.getConnection();
+
+            return qr.update(conn, sql, param);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            JdbcByDruidUtils.close(conn);
+        }
+    }
+
+    public List<T> queryMulti(String sql, Class<T> tClass, Object... param){
+        Connection conn = null;
+        try {
+            conn = JdbcByDruidUtils.getConnection();
+
+            return qr.query(conn, sql, new BeanListHandler<T>(tClass), param);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            JdbcByDruidUtils.close(conn);
+        }
+    }
+
+    public T querySingle(String sql, Class<T> tClass, Object... param){
+        Connection conn = null;
+        try {
+            conn = JdbcByDruidUtils.getConnection();
+
+            return qr.query(conn, sql, new BeanHandler<T>(tClass), param);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            JdbcByDruidUtils.close(conn);
+        }
+    }
+
+    public Object queryScalar(String sql, Object... param){
+        Connection conn = null;
+        try {
+            conn = JdbcByDruidUtils.getConnection();
+
+            return qr.query(conn, sql, new ScalarHandler<>(), param);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            JdbcByDruidUtils.close(conn);
+        }
+    }
+}
+
+```
 

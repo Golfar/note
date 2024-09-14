@@ -609,4 +609,581 @@ public class ServletContext_ extends HttpServlet {
 | .mp4                        | video/mp4              |
 | .m1v/.m1v/.m2v/.mpe/... ... | video/mpeg             |
 
-p82
+# 请求转发和响应重定向
+
++ 请求转发和响应重定向是web应用中间接访问项目资源的两种手段,也是Servlet控制页面跳转的两种手段
+
++ 请求转发通过HttpServletRequest实现,响应重定向通过HttpServletResponse实现
+
++ 请求转发生活举例: 张三找李四借钱,李四没有,李四找王五,让王五借给张三
++ 响应重定向生活举例:张三找李四借钱,李四没有,李四让张三去找王五,张三自己再去找王五借钱
+
+## 请求转发
+
+![image-20240905145321008](./servlet.assets/image-20240905145321008.png)
+
++ 请求转发通过HttpServletRequest对象获取请求转发器实现
++ 请求转发是服务器内部的行为,对客户端是屏蔽的
++ 客户端只发送了一次请求,客户端地址栏不变
++ 服务端只产生了一对请求和响应对象,这一对请求和响应对象会继续传递给下一个资源
++ 因为全程只有一个HttpServletRequset对象,所以请求参数可以传递,请求域中的数据也可以传递
++ 请求转发可以转发给其他Servlet动态资源,也可以转发给一些静态资源以实现页面跳转
++ 请求转发可以转发给WEB-INF下受保护的资源
++ 请求转发不能转发到本项目以外的外部资源
+
+```java
+@WebServlet("/servleta")
+public class ServletA extends HttpServlet {
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        System.out.println("servletA");
+
+        //获得请求转发器
+        //RequestDispatcher servletB = req.getRequestDispatcher("servletb");
+        
+        //转发到html静态资源
+        RequestDispatcher htmlA = req.getRequestDispatcher("a.html");
+        
+        //转发到WEB-INF受保护的静态资源
+        RequestDispatcher htmlB = req.getRequestDispatcher("WEB-INF/b.html");
+        
+        //不可以转发到外部资源
+        RequestDispatcher baidu = req.getRequestDispatcher("http://www.baidu.com");
+
+        //请求转发器做出转发动作
+        servletB.forward(req, resp);
+    }
+}
+@WebServlet("/servletb")
+public class ServletB extends HttpServlet {
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        System.out.println("servletB");
+        PrintWriter writer = resp.getWriter();
+        writer.write("<h1>response of servletB<h1>");
+    }
+}
+```
+
+## 响应重定向
+
+![image-20240905153150209](./servlet.assets/image-20240905153150209.png)
+
++ 响应重定向通过HttpServletResponse对象的sendRedirect方法实现
++ 响应重定向是服务端通过302响应码和路径,告诉客户端自己去找其他资源,是在服务端提示下的,客户端的行为
++ 客户端至少发送了两次请求,客户端地址栏是要变化的
++ 服务端产生了多对请求和响应对象,且请求和响应对象不会传递给下一个资源
++ 因为全程产生了多个HttpServletRequset对象,所以请求参数不可以传递,请求域中的数据也不可以传递
++ 重定向可以是其他Servlet动态资源,也可以是一些静态资源以实现页面跳转
++ 重定向不可以到给WEB-INF下受保护的资源
++ 重定向可以到本项目以外的外部资源
+
+```java
+@WebServlet("/servlet1")
+public class ServletA extends HttpServlet {
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+        //重定向的两种方法
+        //resp.setStatus(302);
+        //resp.setHeader("location", "servlet2");
+
+        //resp.sendRedirect("servlet2");
+
+        //重定向还可以定向到其他资源
+        //外部资源
+        //resp.sendRedirect("http://www.baidu.com");
+        //服务器内部资源
+        //resp.sendRedirect("a.html");
+        //不能请求WEB-INF保护的资源
+        resp.sendRedirect("WEB-INF/b.html");
+    }
+}
+
+@WebServlet("/servlet2")
+public class ServletB extends HttpServlet {
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        PrintWriter writer = resp.getWriter();
+        writer.write("servletB response");
+    }
+}
+```
+
+# web乱码和路径问题
+
+## 乱码问题
+
+1. 数据的编码和解码使用的不是同一个字符集
+2. 使用了不支持某个语言文字的字符集
+
+![image-20240905154508712](./servlet.assets/image-20240905154508712.png)
+
+### HTML乱码问题
+
+设置项目文件的字符集要使用一个支持中文的字符集
+
+查看当前文件的字符集
+
+![image-20240905160153746](./servlet.assets/image-20240905160153746.png)
+
+查看项目字符集 配置,将Global Encoding 全局字符集,Project Encoding 项目字符集, Properties Files 属性配置文件字符集设置为UTF-8
+
+![image-20240905160242427](./servlet.assets/image-20240905160242427.png)
+
+当前视图文件的字符集通过<meta charset="UTF-8"> 来告知浏览器通过什么字符集来解析当前文件
+
+### Tomcat控制台乱码
+
+在tomcat10.1.7这个版本中,修改 tomcat/conf/logging.properties中,所有的UTF-8为GBK即可
+
+![image-20240905160424827](./servlet.assets/image-20240905160424827.png)
+
+sout乱码问题,设置JVM加载.class文件时使用UTF-8字符集
+
+设置虚拟机加载.class文件的字符集和编译时使用的字符集一致
+
+![image-20240905160515908](./servlet.assets/image-20240905160515908.png)
+
+### 请求乱码问题
+
+#### GET请求乱码
+
++ GET方式提交参数的方式是将参数放到URL后面,如果使用的不是UTF-8,那么会对参数进行URL编码处理
++ HTML中的 <meta charset='字符集'/> 影响了GET方式提交参数的URL编码
++ tomcat10.1.7的URI编码默认为 UTF-8
++ 当GET方式提交的参数URL编码和tomcat10.1.7默认的URI编码不一致时,就会出现乱码
+
+#### POST方式请求乱码
+
++ POST请求将参数放在请求体中进行发送
++ 请求体使用的字符集受到了<meta charset="字符集"/> 的影响
++ Tomcat10.1.7 默认使用UTF-8字符集对请求体进行解析
++ 如果请求体的URL转码和Tomcat的请求体解析编码不一致,就容易出现乱码
+
+### 响应乱码问题
+
++ 在Tomcat10.1.7中,向响应体中放入的数据默认使用了工程编码 UTF-8
++ 浏览器在接收响应信息时,使用了不同的字符集或者是不支持中文的字符集就会出现乱码
+
+通过设置content-type响应头,告诉浏览器以指定的字符集解析响应体
+
+## 路径问题
+
++ > 相对路径和绝对路径
+
+  + 相对路径
+    + 相对路径的规则是: 以当前资源所在的路径为出发点去寻找目标资源
+    + 相对路径不以 / 开头
+    + 在file协议下,使用的是磁盘路径
+    + 在http协议下,使用的是url路径
+    + 相对路径中可以使用 ./表示当前资源所在路径,可以省略不写
+    + 相对路径中可以使用../表示当前资源所在路径的上一层路径,需要时要手动添加
+
+  + 绝对路径
+    + 绝对路径的规则是: 使用以一个固定的路径做出出发点去寻找目标资源,和当前资源所在的路径没有关系
+    + 绝对路径要以/ 开头
+    + 绝对路径的写法中,不以当前资源的所在路径为出发点,所以不会出现  ./ 和../
+    + 不同的项目和不同的协议下,绝对路径的基础位置可能不同,要通过测试确定
+    + 绝对路径的好处就是:无论当前资源位置在哪,寻找目标资源路径的写法都一致
+  + 应用场景
+    1. 前端代码中,href src action 等属性
+    2. 请求转发和重定向中的路径
+
+  ### 10.2.1 前端路径问题
+
+  > 前端项目结构
+
+  ![1682390999417](./servlet.assets/1682390999417.png)
+
+  #### 10.2.1.1  相对路径情况分析
+
+  > 相对路径情况1:web/index.html中引入web/static/img/logo.png
+
+  + 访问index.html的url为   :  http://localhost:8080/web03_war_exploded/index.html
+  + 当前资源为                      :  index.html
+  + 当前资源的所在路径为  : http://localhost:8080/web03_war_exploded/
+  + 要获取的目标资源url为 :  http://localhost:8080/web03_war_exploded/static/img/logo.png
+  + index.html中定义的了    : `<img src="static/img/logo.png"/>`
+  + 寻找方式就是在当前资源所在路径(http://localhost:8080/web03_war_exploded/)后拼接src属性值(static/img/logo.png),正好是目标资源正常获取的url(http://localhost:8080/web03_war_exploded/static/img/logo.png)
+
+  ``` html
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <title>Title</title>
+  </head>
+  <body>
+      
+      <img src="static/img/logo.png">
+  </body>
+  </html>
+  
+  
+  ```
+
+  > 相对路径情况2:web/a/b/c/test.html中引入web/static/img/logo.png
+
+  + 访问test.html的url为      :  http://localhost:8080/web03_war_exploded/a/b/c/test.html
+  + 当前资源为                      :  test.html
+  + 当前资源的所在路径为  : http://localhost:8080/web03_war_exploded/a/b/c/
+  + 要获取的目标资源url为 :  http://localhost:8080/web03_war_exploded/static/img/logo.png
+  + test.html中定义的了       : `<img src="../../../static/img/logo.png"/>`
+  + 寻找方式就是在当前资源所在路径(http://localhost:8080/web03_war_exploded/a/b/c/)后拼接src属性值(../../../static/img/logo.png),其中 ../可以抵消一层路径,正好是目标资源正常获取的url(http://localhost:8080/web03_war_exploded/static/img/logo.png)
+
+  ``` html
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <title>Title</title>
+  </head>
+  <body>
+      <!-- ../代表上一层路径 -->
+      <img src="../../../static/img/logo.png">
+  </body>
+  </html>
+  ```
+
+  > 相对路径情况3:web/WEB-INF/views/view1.html中引入web/static/img/logo.png
+
+  + view1.html在WEB-INF下,需要通过Servlet请求转发获得
+
+  ``` java
+  @WebServlet("/view1Servlet")
+  public class View1Servlet extends HttpServlet {
+      @Override
+      protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+          RequestDispatcher requestDispatcher = req.getRequestDispatcher("WEB-INF/views/view1.html");
+          requestDispatcher.forward(req,resp);
+      }
+  }
+  ```
+
+  + 访问view1.html的url为   :  http://localhost:8080/web03_war_exploded/view1Servlet
+  + 当前资源为                      :  view1Servlet
+  + 当前资源的所在路径为  : http://localhost:8080/web03_war_exploded/
+  + 要获取的目标资源url为 :  http://localhost:8080/web03_war_exploded/static/img/logo.png
+  + view1.html中定义的了    : `<img src="static/img/logo.png"/>`
+  + 寻找方式就是在当前资源所在路径(http://localhost:8080/web03_war_exploded/)后拼接src属性值(static/img/logo.png),正好是目标资源正常获取的url(http://localhost:8080/web03_war_exploded/static/img/logo.png)
+
+  ``` html
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <title>Title</title>
+  </head>
+  <body>
+  
+  <img src="static/img/logo.png">
+  </body>
+  </html>
+  ```
+
+  #### 10.2.1.2 绝对路径情况分析
+
+  > 绝对路径情况1:web/index.html中引入web/static/img/logo.png
+
+  + 访问index.html的url为   :  http://localhost:8080/web03_war_exploded/index.html
+  + 绝对路径的基准路径为  :  http://localhost:8080
+  + 要获取的目标资源url为 :  http://localhost:8080/web03_war_exploded/static/img/logo.png
+  + index.html中定义的了    : `<img src="/web03_war_exploded/static/img/logo.png"/>`
+  + 寻找方式就是在基准路径(http://localhost:8080)后面拼接src属性值(/web03_war_exploded/static/img/logo.png),得到的正是目标资源访问的正确路径
+
+  ``` html
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <title>Title</title>
+  </head>
+  <body>
+      <!-- 绝对路径写法 -->
+      <img src="/web03_war_exploded/static/img/logo.png">
+  </body>
+  </html>
+  
+  
+  ```
+
+  > 绝对路径情况2:web/a/b/c/test.html中引入web/static/img/logo.png
+
+  + 访问test.html的url为   :  http://localhost:8080/web03_war_exploded/a/b/c/test.html
+  + 绝对路径的基准路径为  :  http://localhost:8080
+  + 要获取的目标资源url为 :  http://localhost:8080/web03_war_exploded/static/img/logo.png
+  + test.html中定义的了    : `<img src="/web03_war_exploded/static/img/logo.png"/>`
+  + 寻找方式就是在基准路径(http://localhost:8080)后面拼接src属性值(/web03_war_exploded/static/img/logo.png),得到的正是目标资源访问的正确路径
+
+  ``` html
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <title>Title</title>
+  </head>
+  <body>
+      <!-- 绝对路径写法 -->
+      <img src="/web03_war_exploded/static/img/logo.png">
+  </body>
+  </html>
+  ```
+
+  > 绝对路径情况3:web/WEB-INF/views/view1.html中引入web/static/img/logo.png
+
+  + view1.html在WEB-INF下,需要通过Servlet请求转发获得
+
+  ``` java
+  @WebServlet("/view1Servlet")
+  public class View1Servlet extends HttpServlet {
+      @Override
+      protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+          RequestDispatcher requestDispatcher = req.getRequestDispatcher("WEB-INF/views/view1.html");
+          requestDispatcher.forward(req,resp);
+      }
+  }
+  ```
+
+  + 访问view1.html的url为   :  http://localhost:8080/web03_war_exploded/view1Servlet
+  + 绝对路径的基准路径为  :  http://localhost:8080
+  + 要获取的目标资源url为 :  http://localhost:8080/web03_war_exploded/static/img/logo.png
+  + view1.html中定义的了    : `<img src="/web03_war_exploded/static/img/logo.png"/>`
+  + 寻找方式就是在基准路径(http://localhost:8080)后面拼接src属性值(/static/img/logo.png),得到的正是目标资源访问的正确路径
+
+  ``` html
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <title>Title</title>
+  </head>
+  <body>
+  
+  <img src="/web03_war_exploded/static/img/logo.png">
+  </body>
+  </html>
+  ```
+
+  #### 10.2.1.3 base标签的使用
+
+  > base标签定义页面相对路径公共前缀
+
+  + base 标签定义在head标签中,用于定义相对路径的公共前缀
+  + base 标签定义的公共前缀只在相对路径上有效,绝对路径中无效
+  + 如果相对路径开头有 ./ 或者../修饰,则base标签对该路径同样无效
+
+  > index.html 和a/b/c/test.html 以及view1Servlet 中的路径处理
+
+  ```html
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <title>Title</title>
+      <!--定义相对路径的公共前缀,将相对路径转化成了绝对路径-->
+      <base href="/web03_war_exploded/">
+  </head>
+  <body>
+      <img src="static/img/logo.png">
+  </body>
+  </html>
+  ```
+
+  #### 10.2.1.4 缺省项目上下文路径
+
+  > 项目上下文路径变化问题
+
+  + 通过 base标签虽然解决了相对路径转绝对路径问题,但是base中定义的是项目的上下文路径
+  + 项目的上下文路径是可以随意变化的
+  + 一旦项目的上下文路径发生变化,所有base标签中的路径都需要改
+
+  > 解决方案
+
+  + 将项目的上下文路径进行缺省设置,设置为 /,所有的绝对路径中就不必填写项目的上下文了,直接就是/开头即可
+
+  ### 10.2.2 重定向中的路径问题
+
+  > 目标 :由/x/y/z/servletA重定向到a/b/c/test.html
+
+  ``` java
+  @WebServlet("/x/y/z/servletA")
+  public class ServletA extends HttpServlet {
+      @Override
+      protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+          
+      }
+  }
+  
+  ```
+
+  #### 10.2.2.1相对路径写法
+
+  + 访问ServletA的url为   :  http://localhost:8080/web03_war_exploded/x/y/z/servletA
+  + 当前资源为                      :  servletA
+  + 当前资源的所在路径为  : http://localhost:8080/web03_war_exploded/x/x/z/
+  + 要获取的目标资源url为 :  http://localhost:8080/web03_war_exploded/a/b/c/test.html
+  + ServletA重定向的路径    :  ../../../a/b/c/test/html
+  + 寻找方式就是在当前资源所在路径(http://localhost:8080/web03_war_exploded/x/y/z/)后拼接(../../../a/b/c/test/html),形成(http://localhost:8080/web03_war_exploded/x/y/z/../../../a/b/c/test/html)每个../抵消一层目录,正好是目标资源正常获取的url(http://localhost:8080/web03_war_exploded/a/b/c/test/html)
+
+  ``` java
+  @WebServlet("/x/y/z/servletA")
+  public class ServletA extends HttpServlet {
+      @Override
+      protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+          // 相对路径重定向到test.html
+          resp.sendRedirect("../../../a/b/c/test.html");
+      }
+  }
+  ```
+
+  #### 10.2.2.2绝对路径写法
+
+  + 访问ServletA的url为   :  http://localhost:8080/web03_war_exploded/x/y/z/servletA
+
+  + 绝对路径的基准路径为  :  http://localhost:8080
+
+  + 要获取的目标资源url为 :  http://localhost:8080/web03_war_exploded/a/b/c/test.html
+
+  + ServletA重定向的路径    : /web03_war_exploded/a/b/c/test.html
+
+  + 寻找方式就是在基准路径(http://localhost:8080)后面拼接(/web03_war_exploded/a/b/c/test.html),得到( http://localhost:8080/web03_war_exploded/a/b/c/test.html)正是目标资源访问的正确路径
+
+  + 绝对路径中需要填写项目上下文路径,但是上下文路径是变换的
+
+    + 可以通过 ServletContext的getContextPath()获取上下文路径
+    + 可以将项目上下文路径定义为 / 缺省路径,那么路径中直接以/开头即可
+
+    ``` java
+    //绝对路径中,要写项目上下文路径
+    //resp.sendRedirect("/web03_war_exploded/a/b/c/test.html");
+    // 通过ServletContext对象动态获取项目上下文路径
+    //resp.sendRedirect(getServletContext().getContextPath()+"/a/b/c/test.html");
+    // 缺省项目上下文路径时,直接以/开头即可
+    resp.sendRedirect("/a/b/c/test.html");
+    ```
+
+    
+
+  ### 10.2.3 请求转发中的路径问题
+
+  > 目标 :由x/y/servletB请求转发到a/b/c/test.html
+
+  ``` java
+  @WebServlet("/x/y/servletB")
+  public class ServletB extends HttpServlet {
+      @Override
+      protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+  
+      }
+  }
+  ```
+
+  #### 10.2.3.1 相对路径写法
+
+  + 访问ServletB的url为       :  http://localhost:8080/web03_war_exploded/x/y/servletB
+
+  + 当前资源为                      :  servletB
+
+  + 当前资源的所在路径为  : http://localhost:8080/web03_war_exploded/x/x/
+
+  + 要获取的目标资源url为 :  http://localhost:8080/web03_war_exploded/a/b/c/test.html
+
+  + ServletA请求转发路径    :  ../../a/b/c/test/html
+
+  + 寻找方式就是在当前资源所在路径(http://localhost:8080/web03_war_exploded/x/y/)后拼接(../../a/b/c/test/html),形成(http://localhost:8080/web03_war_exploded/x/y/../../a/b/c/test/html)每个../抵消一层目录,正好是目标资源正常获取的url(http://localhost:8080/web03_war_exploded/a/b/c/test/html)
+
+    ``` java
+    @WebServlet("/x/y/servletB")
+    public class ServletB extends HttpServlet {
+        @Override
+        protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+            RequestDispatcher requestDispatcher = req.getRequestDispatcher("../../a/b/c/test.html");
+            requestDispatcher.forward(req,resp);
+        }
+    }
+    
+    
+    ```
+
+  #### 10.2.3.2绝对路径写法
+
+  + 请求转发只能转发到项目内部的资源,其绝对路径无需添加项目上下文路径
+
+  + 请求转发绝对路径的基准路径相当于http://localhost:8080/web03_war_exploded
+
+  + 在项目上下文路径为缺省值时,也无需改变,直接以/开头即可
+
+    ```java
+    @WebServlet("/x/y/servletB")
+    public class ServletB extends HttpServlet {
+        @Override
+        protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+            RequestDispatcher requestDispatcher = req.getRequestDispatcher("/a/b/c/test.html");
+            requestDispatcher.forward(req,resp);
+        }
+    }
+    ```
+
+  #### 10.2.3.3目标资源内相对路径处理
+
+  + 此时需要注意,请求转发是服务器行为,浏览器不知道,地址栏不变化,相当于我们访问test.html的路径为http://localhost:8080/web03_war_exploded/x/y/servletB
+
+  + 那么此时 test.html资源的所在路径就是http://localhost:8080/web03_war_exploded/x/y/所以test.html中相对路径要基于该路径编写,如果使用绝对路径则不用考虑
+
+    ``` html
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Title</title>
+    </head>
+    <body>
+        <!--
+    		当前资源路径是     http://localhost:8080/web03_war_exploded/x/y/servletB
+            当前资源所在路径是  http://localhost:8080/web03_war_exploded/x/y/
+            目标资源路径=所在资源路径+src属性值 
+    		http://localhost:8080/web03_war_exploded/x/y/../../static/img/logo.png
+            http://localhost:8080/web03_war_exploded/static/img/logo.png
+    		得到目标路径正是目标资源的访问路径	
+        -->
+    <img src="../../static/img/logo.png">
+    </body>
+    </html>
+    ```
+
+
+# MVC架构模式
+
+MVC（Model View Controller）是软件工程中的一种**`软件架构模式`**，它把软件系统分为**`模型`**、**`视图`**和**`控制器`**三个基本部分。用一种业务逻辑、数据、界面显示分离的方法组织代码，将业务逻辑聚集到一个部件里面，在改进和个性化定制界面及用户交互的同时，不需要重新编写业务逻辑。
+
++ **M**：Model 模型层,具体功能如下
+  1. 存放和数据库对象的实体类以及一些用于存储非数据库表完整相关的VO对象
+  2. 存放一些对数据进行逻辑运算操作的的一些业务处理代码
+
++ **V**：View 视图层,具体功能如下
+  1. 存放一些视图文件相关的代码 html css js等
+  2. 在前后端分离的项目中,后端已经没有视图文件,该层次已经衍化成独立的前端项目
+
++ **C**：Controller 控制层,具体功能如下
+  1. 接收客户端请求,获得请求数据
+   2. 将准备好的数据响应给客户端
+
+MVC模式下,项目中的常见包：
+
++ M:
+  1. 实体类包(pojo /entity /bean) 专门存放和数据库对应的实体类和一些VO对象
+  2. 数据库访问包(dao/mapper)  专门存放对数据库不同表格CURD方法封装的一些类
+  3. 服务包(service)                       专门存放对数据进行业务逻辑运算的一些类
+
++ C:
+  1. 控制层包(controller)
+
++ V:
+  1. web目录下的视图资源 html css js img 等
+  2. 前端工程化后,在后端项目中已经不存在了
+
+![image-20240905163053183](./servlet.assets/image-20240905163053183.png)
+
+![image-20240905163107365](./servlet.assets/image-20240905163107365.png)
+

@@ -8,3 +8,5 @@ mysql部分参考[mysql入门，晋级，存储过程，mysql面试题，老杜m
 
 javaweb部分参考[尚硅谷全新JavaWeb教程，企业主流javaweb技术栈_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1UN411x7xe/?spm_id_from=333.999.0.0&vd_source=b7fb6b5d49616a5b603c55b4c5e26ed8)
 
+maven部分参考[02.Maven简介之依赖管理工具_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1JN411G7gX/?p=2&spm_id_from=pageDriver&vd_source=b7fb6b5d49616a5b603c55b4c5e26ed8)
+

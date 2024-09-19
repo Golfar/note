@@ -10,3 +10,4 @@ javaweb部分参考[尚硅谷全新JavaWeb教程，企业主流javaweb技术栈_
 
 maven部分参考[02.Maven简介之依赖管理工具_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1JN411G7gX/?p=2&spm_id_from=pageDriver&vd_source=b7fb6b5d49616a5b603c55b4c5e26ed8)
 
+ssm+springboot部分参考[尚硅谷新版SSM框架全套视频教程，Spring6+SpringBoot3最新SSM企业级开发_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1AP411s7D7/?spm_id_from=333.999.0.0&vd_source=b7fb6b5d49616a5b603c55b4c5e26ed8)

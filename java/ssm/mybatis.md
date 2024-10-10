@@ -547,7 +547,7 @@ public void testEmpCount() {
   也可以指定一个包名，MyBatis 会在包名下面搜索需要的 Java Bean，比如：
 
 ```XML
-<typeAliases> <package name="domain.blog"/> </typeAliases>
+<typeAliases> <package name="domain.blog"/> </typeAliases><!--默认为类名首字母小写-->
 ```
 
   每一个在包 `domain.blog` 中的 Java Bean，在没有注解的情况下，会使用 Bean 的首字母小写的非限定类名来作为它的别名。 比如 `domain.blog.Author` 的别名为 `author`；若有注解，则别名为其注解值。见下面的例子：
@@ -726,7 +726,7 @@ public void testSelectAll() {
 
 1. **自增长类型主键**
 
-    Mapper接口中的抽象方法
+    Mapper接口中的抽象方法 
 
 ```Java
 int insertEmployee(Employee employee);
@@ -738,7 +738,7 @@ int insertEmployee(Employee employee);
 <!-- int insertEmployee(Employee employee); -->
 <!-- useGeneratedKeys属性字面意思就是“使用生成的主键” -->
 <!-- keyProperty属性可以指定主键在实体类对象中对应的属性名，Mybatis会将拿到的主键值存入这个属性 -->
-<insert id="insertEmployee" useGeneratedKeys="true" keyProperty="empId">
+<insert id="insertEmployee" useGeneratedKeys="true" keyColounm="emp_id" keyProperty="empId">
   insert into t_emp(emp_name,emp_salary)
   values(#{empName},#{empSalary})
 </insert>
@@ -783,15 +783,15 @@ public void testSaveEmp() {
 
 ```
 
-    在上例中，我们定义了一个 `insertUser` 的插入语句来将 `User` 对象插入到 `user` 表中。我们使用 `selectKey` 来查询 UUID 并设置到 `id` 字段中。
-    
-    通过 `keyProperty` 属性来指定查询到的 UUID 赋值给对象中的 `id` 属性，而 `resultType` 属性指定了 UUID 的类型为 `java.lang.String`。
-    
-    需要注意的是，我们将 `selectKey` 放在了插入语句的前面，这是因为 MySQL 在 `insert` 语句中只支持一个 `select` 子句，而 `selectKey` 中查询 UUID 的语句就是一个 `select` 子句，因此我们需要将其放在前面。
-    
-    最后，在将 `User` 对象插入到 `user` 表中时，我们直接使用对象中的 `id` 属性来插入主键值。
-    
-    使用这种方式，我们可以方便地插入 UUID 作为字符串类型主键。当然，还有其他插入方式可以使用，如使用Java代码生成UUID并在类中显式设置值等。需要根据具体应用场景和需求选择合适的插入方式。
+在上例中，我们定义了一个 `insertUser` 的插入语句来将 `User` 对象插入到 `user` 表中。我们使用 `selectKey` 来查询 UUID 并设置到 `id` 字段中。
+
+通过 `keyProperty` 属性来指定查询到的 UUID 赋值给对象中的 `id` 属性，而 `resultType` 属性指定了 UUID 的类型为 `java.lang.String`。
+
+需要注意的是，我们将 `selectKey` 放在了插入语句的前面，这是因为 MySQL 在 `insert` 语句中只支持一个 `select` 子句，而 `selectKey` 中查询 UUID 的语句就是一个 `select` 子句，因此我们需要将其放在前面。
+
+最后，在将 `User` 对象插入到 `user` 表中时，我们直接使用对象中的 `id` 属性来插入主键值。
+
+使用这种方式，我们可以方便地插入 UUID 作为字符串类型主键。当然，还有其他插入方式可以使用，如使用Java代码生成UUID并在类中显式设置值等。需要根据具体应用场景和需求选择合适的插入方式。
 
 ### 2.3.7 实体类属性和数据库字段对应关系
 
@@ -1209,9 +1209,9 @@ ps.setInt(1,id);
 </select>
 ```
 
-    你可能想把它映射到一个智能的对象模型，这个对象表示了一篇博客，它由某位作者所写，有很多的博文，每篇博文有零或多条的评论和标签。 我们先来看看下面这个完整的例子，它是一个非常复杂的结果映射（假设作者，博客，博文，评论和标签都是类型别名）。 虽然它看起来令人望而生畏，但其实非常简单。 
+你可能想把它映射到一个智能的对象模型，这个对象表示了一篇博客，它由某位作者所写，有很多的博文，每篇博文有零或多条的评论和标签。 我们先来看看下面这个完整的例子，它是一个非常复杂的结果映射（假设作者，博客，博文，评论和标签都是类型别名）。 虽然它看起来令人望而生畏，但其实非常简单。 
 
-```Java
+```xml
 <!-- 非常复杂的结果映射 -->
 <resultMap id="detailedBlogResultMap" type="Blog">
   <constructor>
@@ -1240,15 +1240,16 @@ ps.setInt(1,id);
 </resultMap>
 ```
 
-    你现在可能看不懂，接下来我们要学习将多表查询结果使用ResultMap标签映射到实体类对象上！
-    
-    **我们的学习目标：**
-    
-      多表查询语句使用
-    
-      多表结果承接实体类设计
-    
-      使用ResultMap完成多表结果映射
+你现在可能看不懂，接下来我们要学习将多表查询结果使用ResultMap标签映射到实体类对象上！
+
+**我们的学习目标：**
+
+  多表查询语句使用
+
+  多表结果承接实体类设计
+
+  使用ResultMap完成多表结果映射
+
 2. **实体类设计方案**
 
     多表关系回顾：（双向查看）
@@ -1288,9 +1289,9 @@ public class Order {
 }  
 
 ```
-    - 对多: 用户对应的订单，讲师对应的学生或者学生对应的讲师都是对多关系：
-    
-        实体类设计：对多关系下，类中只要包含对方类型集合属性即可！
+- 对多: 用户对应的订单，讲师对应的学生或者学生对应的讲师都是对多关系：
+
+    实体类设计：对多关系下，类中只要包含对方类型集合属性即可！
 
 ```Java
 public class Customer {
@@ -1304,24 +1305,24 @@ public class Order {
 
   private Integer orderId;
   private String orderName;
-  private Customer customer;// 体现的是对一的关系
   
 }
 
 //查询客户和客户对应的订单集合  不要管!
 ```
 
-    多表结果实体类设计小技巧：
-    
-      对一，属性中包含对方对象
-    
-      对多，属性中包含对方对象集合
-    
-      只有真实发生多表查询时，才需要设计和修改实体类，否则不提前设计和修改实体类！
-    
-      无论多少张表联查，实体类设计都是两两考虑!
-    
-      在查询映射的时候，只需要关注本次查询相关的属性！例如：查询订单和对应的客户，就不要关注客户中的订单集合！
+多表结果实体类设计小技巧：
+
+  **对一，属性中包含对方对象**
+
+  **对多，属性中包含对方对象集合**
+
+  只有真实发生多表查询时，才需要设计和修改实体类，否则不提前设计和修改实体类！
+
+  无论多少张表联查，实体类设计都是两两考虑!
+
+  **在查询映射的时候，只需要关注本次查询相关的属性！例如：查询订单和对应的客户，就不要关注客户中的订单集合！**
+
 3. **多表映射案例准备**
 
     数据库：
@@ -1338,15 +1339,16 @@ INSERT INTO `t_order` (`order_name`, `customer_id`) VALUES ('o2', '1');
 INSERT INTO `t_order` (`order_name`, `customer_id`) VALUES ('o3', '1'); 
 ```
 
-    实际开发时，一般在开发过程中，不给数据库表设置外键约束。
+实际开发时，一般在开发过程中，不给数据库表设置外键约束。
+
 原因是避免调试不方便。
 一般是功能开发完成，再加外键约束检查是否有bug。
 
 ​    
 
-    实体类设计：
-    
-    稍后会进行订单关联客户查询，也会进行客户关联订单查询，所以在这先练习设计
+实体类设计：
+
+稍后会进行订单关联客户查询，也会进行客户关联订单查询，所以在这先练习设计
 
 ```Java
 @Data
@@ -1418,9 +1420,6 @@ public interface OrderMapper {
 </select>
 ```
 
-    对应关系可以参考下图：
-    
-    ![](https://secure2.wostatic.cn/static/ZCDu3rWUyiddTsxUcPDQe/img018.png?auth_key=1727251168-bYGS3u6JYtYhzgRCkcdEn-0-4324f3c415dbc4cc717dffabb84e4e5c)
 4. Mybatis全局注册Mapper文件
 
 ```XML
@@ -1487,7 +1486,7 @@ public interface CustomerMapper {
 ```
 3. CustomerMapper.xml文件
 
-```Java
+```xml
 <!-- 配置resultMap实现从Customer到OrderList的“对多”关联关系 -->
 <resultMap id="selectCustomerWithOrderListResultMap"
 
@@ -1522,9 +1521,6 @@ public interface CustomerMapper {
 </select>
 ```
 
-    对应关系可以参考下图：
-    
-    ![](https://secure2.wostatic.cn/static/qz1PGNuKjnEijkd8JdKdsz/img019.png?auth_key=1727251176-wA4hNbiDTyT1QuSdKHvuR3-0-8a9a6e784709f0a84c5c143d08b7b7c5)
 4. Mybatis全局注册Mapper文件
 
 ```XML
@@ -1601,8 +1597,6 @@ public void testRelationshipToMulti() {
 
 经常遇到很多按照很多查询条件进行查询的情况，比如智联招聘的职位搜索等。其中经常出现很多条件不取值的情况，在后台应该如何完成最终的SQL语句呢？
 
-![](https://secure2.wostatic.cn/static/aFpU3YtV2MDrwZof2q4gaK/image.png?auth_key=1727251203-bfHK67W6G5sNTCXLkinSFj-0-cf6e47b248a36750ba46e9908999b41a)
-
 动态 SQL 是 MyBatis 的强大特性之一。如果你使用过 JDBC 或其它类似的框架，你应该能理解根据不同条件拼接 SQL 语句有多痛苦，例如拼接时要确保不能忘记添加必要的空格，还要注意去掉列表最后一个列名的逗号。利用动态 SQL，可以彻底摆脱这种痛苦。
 
 使用动态 SQL 并非一件易事，但借助可用于任何 SQL 映射语句中的强大的动态 SQL 语言，MyBatis 显著地提升了这一特性的易用性。
@@ -1617,7 +1611,7 @@ public void testRelationshipToMulti() {
 <!-- List<Employee> selectEmployeeByCondition(Employee employee); -->
 <select id="selectEmployeeByCondition" resultType="employee">
     select emp_id,emp_name,emp_salary from t_emp
-    <!-- where标签会自动去掉“标签体内前面多余的and/or” -->
+    <!-- where标签会自动去掉“标签体内前面多余的逻辑判断” -->
     <where>
         <!-- 使用if标签，让我们可以有选择的加入SQL语句的片段。这个SQL语句片段是否要加入整个SQL语句，就看if标签判断的结果是否为true -->
         <!-- 在if标签的test属性中，可以访问实体类的属性，不可以访问数据库表的字段 -->
@@ -1730,36 +1724,6 @@ public void testRelationshipToMulti() {
 
 ## 4.6 foreach标签
 
-### 4.5 choose/when/otherwise标签
-
-  在多个分支条件中，仅执行一个。
-
-  - 从上到下依次执行条件判断
-  - 遇到的第一个满足条件的分支会被采纳
-  - 被采纳分支后面的分支都将不被考虑
-  - 如果所有的when分支都不满足，那么就执行otherwise分支
-
-```XML
-<!-- List<Employee> selectEmployeeByConditionByChoose(Employee employee) -->
-<select id="selectEmployeeByConditionByChoose" resultType="com.atguigu.mybatis.entity.Employee">
-    select emp_id,emp_name,emp_salary from t_emp
-    where
-    <choose>
-        <when test="empName != null">emp_name=#{empName}</when>
-        <when test="empSalary &lt; 3000">emp_salary &lt; 3000</when>
-        <otherwise>1=1</otherwise>
-    </choose>
-    
-    <!--
-     第一种情况：第一个when满足条件 where emp_name=?
-     第二种情况：第二个when满足条件 where emp_salary < 3000
-     第三种情况：两个when都不满足 where 1=1 执行了otherwise
-     -->
-</select>
-```
-
-### 4.6 foreach标签
-
   **基本用法**
 
   用批量插入举例
@@ -1785,7 +1749,7 @@ public void testRelationshipToMulti() {
 
   上面批量插入的例子本质上是一条SQL语句，而实现批量更新则需要多条SQL语句拼起来，用分号分开。也就是一次性发送多条SQL语句让数据库执行。此时需要在数据库连接信息的URL地址中设置：
 
-```.properties
+```properties
 atguigu.dev.url=jdbc:mysql:///mybatis-example?allowMultiQueries=true
 ```
 
@@ -1845,7 +1809,8 @@ Parameter 'empList' not found. Available parameters are [arg0, collection, list]
 </mappers>
 ```
 
-    此时这个包下的所有 Mapper 配置文件将被自动加载、注册，比较方便。
+此时这个包下的所有 Mapper 配置文件将被自动加载、注册，比较方便。
+
 3. 资源创建要求
 - Mapper 接口和 Mapper 配置文件名称一致
     - Mapper 接口：EmployeeMapper.java
@@ -1859,24 +1824,6 @@ Parameter 'empList' not found. Available parameters are [arg0, collection, list]
         ![](https://secure2.wostatic.cn/static/sAqWwce8qsUKcoddYAqMws/image.png?auth_key=1727251263-8aK1gooQxaTJFLUcFSx2wa-0-b32358ee834c7d14e98869830f284435)
 
 ## 5.2 插件和分页插件PageHelper
-
-### 5.2.1 插件机制和PageHelper
-
-MyBatis 对插件进行了标准化的设计，并提供了一套可扩展的插件机制。插件可以在用于语句执行过程中进行拦截，并允许通过自定义处理程序来拦截和修改 SQL 语句、映射语句的结果等。
-
-具体来说，MyBatis 的插件机制包括以下三个组件：
-
-1. `Interceptor`（拦截器）：定义一个拦截方法 `intercept`，该方法在执行 SQL 语句、执行查询、查询结果的映射时会被调用。
-2. `Invocation`（调用）：实际上是对被拦截的方法的封装，封装了 `Object target`、`Method method` 和 `Object[] args` 这三个字段。
-3. `InterceptorChain`（拦截器链）：对所有的拦截器进行管理，包括将所有的 Interceptor 链接成一条链，并在执行 SQL 语句时按顺序调用。
-
-插件的开发非常简单，只需要实现 Interceptor 接口，并使用注解 `@Intercepts` 来标注需要拦截的对象和方法，然后在 MyBatis 的配置文件中添加插件即可。
-
-PageHelper 是 MyBatis 中比较著名的分页插件，它提供了多种分页方式（例如 MySQL 和 Oracle 分页方式），支持多种数据库，并且使用非常简单。下面就介绍一下 PageHelper 的使用方式。
-
-https://github.com/pagehelper/Mybatis-PageHelper/blob/master/wikis/zh/HowToUse.md#如何配置数据库方言
-
-### 5.2.2 PageHelper插件使用
 
 1. pom.xml引入依赖
 
@@ -1901,7 +1848,8 @@ https://github.com/pagehelper/Mybatis-PageHelper/blob/master/wikis/zh/HowToUse.m
 
 ```
 
-    其中，`com.github.pagehelper.PageInterceptor` 是 PageHelper 插件的名称，`dialect` 属性用于指定数据库类型（支持多种数据库）
+其中，`com.github.pagehelper.PageInterceptor` 是 PageHelper 插件的名称，`dialect` 属性用于指定数据库类型（支持多种数据库）
+
 3. 页插件使用
 
     在查询方法中使用分页：
@@ -1958,7 +1906,8 @@ ORM（Object-Relational Mapping，对象-关系映射）是一种将数据库和
 
 ### 5.3.2 逆向工程
 
-    MyBatis 的逆向工程是一种自动化生成持久层代码和映射文件的工具，它可以根据数据库表结构和设置的参数生成对应的实体类、Mapper.xml 文件、Mapper 接口等代码文件，简化了开发者手动生成的过程。逆向工程使开发者可以快速地构建起 DAO 层，并快速上手进行业务开发。
+MyBatis 的逆向工程是一种自动化生成持久层代码和映射文件的工具，它可以根据数据库表结构和设置的参数生成对应的实体类、Mapper.xml 文件、Mapper 接口等代码文件，简化了开发者手动生成的过程。逆向工程使开发者可以快速地构建起 DAO 层，并快速上手进行业务开发。
+
    MyBatis 的逆向工程有两种方式：通过 MyBatis Generator 插件实现和通过 Maven 插件实现。无论是哪种方式，逆向工程一般需要指定一些配置参数，例如数据库连接 URL、用户名、密码、要生成的表名、生成的文件路径等等。
    总的来说，MyBatis 的逆向工程为程序员提供了一种方便快捷的方式，能够快速地生成持久层代码和映射文件，是半自动 ORM 思维像全自动发展的过程，提高程序员的开发效率。
 

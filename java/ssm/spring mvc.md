@@ -58,8 +58,8 @@ SpringMVC的作用主要覆盖的是表述层，例如：
   - 等等等
 
 **最终总结：**
-  1. 简化前端参数接收( 形参列表 )
-  2. 简化后端数据响应(返回值)
+  1. **简化前端参数接收**( 形参列表 )
+  2. **简化后端数据响应**(返回值)
   3. 以及其他......
 
 ## 1.3 核心组件和调用流程
@@ -72,7 +72,10 @@ Spring MVC与许多其他Web框架一样，是围绕前端控制器模式设计�
 
 ![](https://secure2.wostatic.cn/static/no1PDXU3JX5K4cecSAx5oL/image.png?auth_key=1728037713-vLw5gaMWo965QvdLQXjUA7-0-18d1add4aad299dfea1265fe35fc9228)
 
+**红色+绿色共同构成了SpringMVC框架**
+
 **SpringMVC涉及组件理解：**
+
   1. DispatcherServlet :  SpringMVC提供，我们需要使用web.xml配置使其生效，它是整个流程处理的核心，所有请求都经过它的处理和分发！[ CEO ]
   2. HandlerMapping :  SpringMVC提供，我们需要进行IoC配置使其加入IoC容器方可生效，它内部缓存handler(controller方法)和handler访问路径数据，被DispatcherServlet调用，用于查找路径对应的handler！[秘书]
   3. HandlerAdapter : SpringMVC提供，我们需要进行IoC配置使其加入IoC容器方可生效，它可以处理请求参数和处理响应数据数据，每次DispatcherServlet都是通过handlerAdapter间接调用handler，他是handler和DispatcherServlet之间的适配器！[经理]
@@ -297,13 +300,12 @@ public class ProductController {
 
 ```
 
-```text
 单层匹配和多层匹配：
   /*：只能匹配URL地址中的一层，如果想准确匹配两层，那么就写“/*/*”以此类推。
   /**：可以匹配URL地址中的多层。
 其中所谓的一层或多层是指一个URL地址字符串被“/”划分出来的各个层次
 这个知识点虽然对于@RequestMapping注解来说实用性不大，但是将来配置拦截器的时候也遵循这个规则。
-```
+
 3. **类和方法级别区别**
 
     `@RequestMapping` 注解可以用于类级别和方法级别，它们之间的区别如下：
@@ -328,6 +330,8 @@ public class ProductController {
 ```
 4. **附带请求方式限制**
 
+    默认情况下，只要路径匹配，任何请求方式都会响应
+    
     HTTP 协议定义了八种请求方式，在 SpringMVC 中封装到了下面这个枚举类：
 
 ```Java
@@ -336,9 +340,9 @@ public enum RequestMethod {
 }
 ```
 
-    默认情况下：@RequestMapping("/logout") 任何请求方式都可以访问！
-    
-    如果需要特定指定：
+默认情况下：@RequestMapping("/logout") 任何请求方式都可以访问！
+
+如果需要特定指定：
 
 ```Java
 @Controller
@@ -386,7 +390,8 @@ public class UserController {
 @GetMapping(value="/login")
 ```
 
-    注意：进阶注解只能添加到handler方法上，无法添加到类上！
+注意：进阶注解只能添加到handler方法上，无法添加到类上！
+
 6. **常见配置问题**
 
     出现原因：多个 handler 方法映射了同一个地址，导致 SpringMVC 在接收到这个地址的请求时该找哪个 handler 方法处理。
@@ -456,10 +461,11 @@ public class ParamController {
     可以使用 `@RequestParam` 注释将 Servlet 请求参数（即查询参数或表单数据）绑定到控制器中的方法参数。
 
     `@RequestParam`使用场景：
+    
       - 指定绑定的请求参数名
       - 要求请求参数必须传递
       - 为请求参数提供默认值
-
+    
     基本用法：
 
 ```Java
@@ -478,13 +484,11 @@ public Object paramForm(@RequestParam("name") String name,
 }
 ```
 
-    默认情况下，使用此批注的方法参数是必需的，但您可以通过将 `@RequestParam` 批注的 `required` 标志设置为 `false`！
-    
-    如果没有没有设置非必须，也没有传递参数会出现：
-    
-    ![](https://secure2.wostatic.cn/static/rdbdJyYUSsMtSsANx5icFq/image.png?auth_key=1728037855-AcyT3iLp1TtbsCwoNZBwg-0-a971534b69f60ceb95ba589fa0f2d556)
-    
-    将参数设置非必须，并且设置默认值：
+默认情况下，使用此批注的方法参数是必需的，但您可以通过将 `@RequestParam` 批注的 `required` 标志设置为 `false`！
+
+如果没有没有设置非必须，也没有传递参数会出现：
+
+将参数设置非必须，并且设置默认值：
 
 ```Java
 @GetMapping(value="/data")
@@ -514,11 +518,11 @@ public Object paramForm(@RequestParam("name") String name,
       return hbs;
   }
 ```
-    2. 实体接收
-    
-        Spring MVC 是 Spring 框架提供的 Web 框架，它允许开发者使用实体对象来接收 HTTP 请求中的参数。通过这种方式，可以在方法内部直接使用对象的属性来访问请求参数，而不需要每个参数都写一遍。下面是一个使用实体对象接收参数的示例：
-    
-        定义一个用于接收参数的实体类：
+2. 实体接收
+
+    Spring MVC 是 Spring 框架提供的 Web 框架，它允许开发者使用实体对象来接收 HTTP 请求中的参数。通过这种方式，可以在方法内部直接使用对象的属性来访问请求参数，而不需要每个参数都写一遍。下面是一个使用实体对象接收参数的示例：
+
+    定义一个用于接收参数的实体类：
 
 ```Java
 public class User {
@@ -531,7 +535,7 @@ public class User {
 }
 ```
 
-        在控制器中，使用实体对象接收，示例代码如下：
+​    在控制器中，使用实体对象接收，示例代码如下：
 
 ```Java
 @Controller
@@ -616,7 +620,8 @@ public String addPerson(@RequestBody Person person) {
 }
 ```
 
-    在上述代码中，`@RequestBody` 注解将请求体中的 JSON 数据映射到 `Person` 类型的 `person` 参数上，并将其作为一个对象来传递给 `addPerson()` 方法进行处理。
+在上述代码中，`@RequestBody` 注解将请求体中的 JSON 数据映射到 `Person` 类型的 `person` 参数上，并将其作为一个对象来传递给 `addPerson()` 方法进行处理。
+
 4. 完善配置
 
     测试：
@@ -656,7 +661,7 @@ public class SpringMvcConfig implements WebMvcConfigurer {
 }
 ```
 
-    pom.xml 加入jackson依赖
+pom.xml 加入jackson依赖
 
 ```XML
 <dependency>
@@ -995,6 +1000,12 @@ public String forwardDemo() {
     return "forward:/demo";
 }
 
+@RequestMapping("/redirect-baidu")
+public String forwardDemo() {
+    // 转发到 baidu 路径
+    return "redirect:http://www.baidu.com";
+}
+
 //注意： 转发和重定向到项目下资源路径都是相同，都不需要添加项目根路径！填写项目下路径即可！
 ```
 
@@ -1061,7 +1072,7 @@ public Object handle() {
 
 具体来说，`@ResponseBody` 注解可以用来标识方法或者方法返回值，表示方法的返回值是要直接返回给客户端的数据，而不是由视图解析器来解析并渲染生成响应体（viewResolver没用）。
 
-    测试方法：
+测试方法：
 
 ```Java
 @RequestMapping(value = "/user/detail", method = RequestMethod.POST)
@@ -1076,9 +1087,6 @@ public User getUser(@RequestBody User userParam) {
 }
 ```
 
-    返回结果：
-    
-    ![](https://secure2.wostatic.cn/static/b8AAMNoaVABerV8BGsqNTo/image.png?auth_key=1728038162-bvGS7K7K2mKdepMhw7b4eZ-0-5b3a8bd5c586ef25a0f6f91b914073c7)
 2. 类上使用@ResponseBody
 
     如果类中每个方法上都标记了 @ResponseBody 注解，那么这些注解就可以提取到类上。
@@ -1090,7 +1098,9 @@ public User getUser(@RequestBody User userParam) {
 public class ParamController {
 ```
 
-### 3.3.3 @ResiController
+**只要使用了@ResponseBody就不会再进行转发和重定向了，也就是说转发和重定向语句不会生效了**
+
+### 3.3.3 @RestController
 
 类上的 @ResponseBody 注解可以和 @Controller 注解合并为 @RestController 注解。所以使用了 @RestController 注解就相当于给类中的每个方法都加了 @ResponseBody 注解。
 
@@ -1165,6 +1175,7 @@ public class SpringMvcConfig implements WebMvcConfigurer {
     }
     
     //开启静态资源处理 <mvc:default-servlet-handler/>
+    //先去handlerMapping中找路径，如果没有回去找静态资源
     @Override
     public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
         configurer.enable();
@@ -1185,6 +1196,8 @@ public class SpringMvcConfig implements WebMvcConfigurer {
 @EnableWebMvc  //json数据处理,必须使用此注解,因为他会加入json处理器
 ```
 
+![image-20241011123913756](./spring mvc.assets/image-20241011123913756.png)
+
 # 四、RESTFul风格设计和实战
 
 ## 4.1 概述
@@ -1203,14 +1216,12 @@ RESTful（Representational State Transfer）是一种软件架构风格，用于
 
 ### 4.1.2 特点
 
-1. 每一个URI代表1种资源（URI 是名词）；
+1. 每一个URI代表1种**资源**（URI 是名词）；
 2. 客户端使用GET、POST、PUT、DELETE 4个表示操作方式的动词对服务端资源进行操作：GET用来获取资源，POST用来新建资源（也可以用于更新资源），PUT用来更新资源，DELETE用来删除资源；
 3. 资源的表现形式是XML或者**JSON**；
-4. 客户端与服务端之间的交互在请求之间是无状态的，从客户端到服务端的每个请求都必须包含理解请求所必需的信息。
+4. 客户端与服务端之间的交互在请求之间是**无状态的**，从客户端到服务端的每个请求都必须包含理解请求所必需的信息。
 
 ### 4.1.3 设计规范
-
-
 
   1. **HTTP协议请求方式要求**
 
@@ -1619,9 +1630,6 @@ public class Process01Interceptor implements HandlerInterceptor {
 }
 ```
 
-    拦截器方法拦截位置：
-    
-    ![](https://secure2.wostatic.cn/static/9W6TF7dUwqdv2qi4KHAkAr/image.png?auth_key=1728038508-mjtYiJrm7Fxnn8st3AD4nP-0-31acbd7319dfa160212fbc506ccc2ea6)
 2. 修改配置类添加拦截器
 
 ```Java
@@ -1665,7 +1673,7 @@ public void addInterceptors(InterceptorRegistry registry) {
 }
 
 ```
-    2. 精准配置
+2. 精准配置
 
 ```Java
 @Override
@@ -1681,7 +1689,7 @@ public void addInterceptors(InterceptorRegistry registry) {
 }
 
 ```
-    3. 排除配置
+3. 排除配置
 
 ```Java
 //添加拦截器
@@ -1733,8 +1741,7 @@ public void addInterceptors(InterceptorRegistry registry) {
 | @Future                    | 标注值只能用于日期型，且必须是将来的日期       |
 | @Pattern(value)            | 标注值必须符合指定的正则表达式                 |
 
-
-    JSR 303 只是一套标准，需要提供其实现才可以使用。Hibernate Validator 是 JSR 303 的一个参考实现，除支持所有标准的校验注解外，它还支持以下的扩展注解：
+JSR 303 只是一套标准，需要提供其实现才可以使用。Hibernate Validator 是 JSR 303 的一个参考实现，除支持所有标准的校验注解外，它还支持以下的扩展注解：
 
 | 注解      | 规则                               |
 | --------- | ---------------------------------- |
@@ -1743,10 +1750,10 @@ public void addInterceptors(InterceptorRegistry registry) {
 | @NotEmpty | 标注值字符串不能是空字符串         |
 | @Range    | 标注值必须在指定的范围内           |
 
+Spring 4.0 版本已经拥有自己独立的数据校验框架，同时支持 JSR 303 标准的校验框架。Spring 在进行数据绑定时，可同时调用校验框架完成数据校验工作。在SpringMVC 中，可直接通过注解驱动 @EnableWebMvc 的方式进行数据校验。Spring 的 LocalValidatorFactoryBean 既实现了 Spring 的 Validator 接口，也实现了 JSR 303 的 Validator 接口。只要在Spring容器中定义了一个LocalValidatorFactoryBean，即可将其注入到需要数据校验的 Bean中。Spring本身并没有提供JSR 303的实现，所以必须将JSR 303的实现者的jar包放到类路径下。
 
-    Spring 4.0 版本已经拥有自己独立的数据校验框架，同时支持 JSR 303 标准的校验框架。Spring 在进行数据绑定时，可同时调用校验框架完成数据校验工作。在SpringMVC 中，可直接通过注解驱动 @EnableWebMvc 的方式进行数据校验。Spring 的 LocalValidatorFactoryBean 既实现了 Spring 的 Validator 接口，也实现了 JSR 303 的 Validator 接口。只要在Spring容器中定义了一个LocalValidatorFactoryBean，即可将其注入到需要数据校验的 Bean中。Spring本身并没有提供JSR 303的实现，所以必须将JSR 303的实现者的jar包放到类路径下。
-    
-    配置 @EnableWebMvc后，SpringMVC 会默认装配好一个 LocalValidatorFactoryBean，通过在处理方法的入参上标注 @Validated 注解即可让 SpringMVC 在完成数据绑定后执行数据校验的工作。
+配置 @EnableWebMvc后，SpringMVC 会默认装配好一个 LocalValidatorFactoryBean，通过在处理方法的入参上标注 @Validated 注解即可让 SpringMVC 在完成数据绑定后执行数据校验的工作。
+
 2. **操作演示**
     - 导入依赖
 
@@ -1773,7 +1780,7 @@ public void addInterceptors(InterceptorRegistry registry) {
     <version>8.0.0.Final</version>
 </dependency>
 ```
-    - 应用校验注解
+- 应用校验注解
 
 ```Java
 import jakarta.validation.constraints.Email;
@@ -1822,7 +1829,7 @@ public class User {
 }
 
 ```
-    - handler标记和绑定错误收集
+- handler标记和绑定错误收集
 
 ```Java
 @RestController
@@ -1848,9 +1855,9 @@ public class UserController {
     }
 }
 ```
-    - 测试效果
-    
-        ![](https://secure2.wostatic.cn/static/oXLwvcaMaLc4TggmPFNToV/image.png?auth_key=1728038519-qAKWhGbLSaoxuvreWrFbyq-0-6ffca1a2badb04488af27d91524f6ddd)
+- 测试效果
+
+
 3. **易混总结**
 
     @NotNull、@NotEmpty、@NotBlank 都是用于在数据校验中检查字段值是否为空的注解，但是它们的用法和校验规则有所不同。

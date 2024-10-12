@@ -277,14 +277,12 @@ Spring框架提供了多种配置方式：XML配置方式、注解方式和Java�
 </beans>
 ```
 
-```xml
 Spring IoC 容器管理一个或多个组件。这些 组件是使用你提供给容器的配置元数据（例如，以 XML `<bean/>` 定义的形式）创建的。
 
 <bean /> 标签 == 组件信息声明
 
 - `id` 属性是标识单个 Bean 定义的字符串。
 - `class` 属性定义 Bean 的类型并使用完全限定的类名。
-```
 
 2.**实例化IoC容器**
 
@@ -366,25 +364,24 @@ public class HappyComponent {
     }
 }
 ```
-    2. xml配置文件编写
-    
-        创建携带spring约束的xml配置文件
-    
-        ![](https://secure2.wostatic.cn/static/7eC1WeTyXz1oLaGkPfJBfh/image.png?auth_key=1726647308-5YdUsbfKgoVHRBt2GZvb2G-0-63e4e102c59890aef6d7af8ceafd8e90)
-    
-        编写配置文件：
-    
-        文件：resources/spring-bean-01.xml
+2. xml配置文件编写
 
-```Java
+    创建携带spring约束的xml配置文件
+
+    编写配置文件：
+
+    文件：resources/spring-bean-01.xml
+
+```xml
 <!-- 实验一 [重要]创建bean -->
 <bean id="happyComponent" class="com.atguigu.ioc.HappyComponent"/>
 ```
 
-        - bean标签：通过配置bean标签告诉IOC容器需要创建对象的组件信息
+    - bean标签：通过配置bean标签告诉IOC容器需要创建对象的组件信息
         - id属性：bean的唯一标识,方便后期获取Bean！
         - class属性：组件类的全限定符！
         - 注意：要求当前组件类必须包含无参数构造函数！
+
 5. 基于静态工厂方法实例化
 
     > 除了使用构造函数实例化对象，还有一类是通过工厂模式实例化对象。接下来我们讲解如何定义使用静态工厂方法创建Bean的配置 ！
@@ -402,9 +399,9 @@ public class ClientService {
   }
 }
 ```
-    2. xml配置文件编写
-    
-        文件：resources/spring-bean-01.xml
+2. xml配置文件编写
+
+    文件：resources/spring-bean-01.xml
 
 ```XML
 <bean id="clientService"
@@ -412,8 +409,9 @@ public class ClientService {
   factory-method="createInstance"/>
 ```
 
-        - class属性：指定工厂类的全限定符！
+    - class属性：指定工厂类的全限定符！
         - factory-method: 指定静态工厂方法，注意，该方法必须是static方法。
+
 6. 基于实例工厂方法实例化
 
     > 接下来我们讲解下如何定义使用实例工厂方法创建Bean的配置 ！
@@ -430,9 +428,9 @@ public class DefaultServiceLocator {
   }
 }
 ```
-    2. xml配置文件编写
-    
-        文件：resources/spring-bean-01.xml
+2. xml配置文件编写
+
+    文件：resources/spring-bean-01.xml
 
 ```XML
 <!-- 将工厂类进行ioc配置 -->
@@ -445,8 +443,9 @@ public class DefaultServiceLocator {
   factory-method="createClientServiceInstance"/>
 ```
 
-        - factory-bean属性：指定当前容器中工厂Bean 的名称。
-        - factory-method:  指定实例工厂方法名。注意，实例方法必须是非static的！
+   - factory-bean属性：指定当前容器中工厂Bean 的名称。
+   - factory-method:  指定实例工厂方法名。注意，实例方法必须是非static的！
+
 7. 图解IoC配置流程
 
     ![](https://secure2.wostatic.cn/static/mpqqiD6Bmbno45SpRwBNom/image.png?auth_key=1726647308-dv999VpBn6vGvFQfNEm97Q-0-629864ddde3b5033df2eb5649fa76c35)
@@ -484,9 +483,9 @@ public class UserService {
 }
 
 ```
-    3. 编写配置文件
-    
-        文件：resources/spring-02.xml
+3. 编写配置文件
+
+    文件：resources/spring-02.xml
 
 ```XML
 <beans>
@@ -500,7 +499,8 @@ public class UserService {
 </beans>
 ```
 
-        - constructor-arg标签：可以引用构造参数 ref引用其他bean的标识。
+​    - constructor-arg标签：可以引用构造参数 ref引用其他bean的标识。
+
 4. 基于构造函数的依赖注入（多构造参数解析）
     1. 介绍
 
@@ -573,8 +573,9 @@ public class UserService {
 </beans>
 
 ```
-        - constructor-arg标签：指定构造参数和对应的值
-        - constructor-arg标签：name属性指定参数名、index属性指定参数角标、value属性指定普通属性值
+   - constructor-arg标签：指定构造参数和对应的值
+   - constructor-arg标签：name属性指定参数名、index属性指定参数角标、value属性指定普通属性值
+
 5. **基于Setter方法依赖注入**
     1. 介绍
 
@@ -623,8 +624,8 @@ public class SimpleMovieLister {
 <bean id="movieFinder" class="examples.MovieFinder"/>
 
 ```
-        - property标签： 可以给setter方法对应的属性赋值
-        - property 标签： name属性代表**set方法标识**、ref代表引用bean的标识id、value属性代表基本属性值
+   - property标签： 可以给setter方法对应的属性赋值
+   - property 标签： name属性代表**set方法标识**、ref代表引用bean的标识id、value属性代表基本属性值
 
 **总结：**
 
@@ -711,7 +712,7 @@ public class BeanTwo {
   }
 }
 ```
-    3. 周期方法配置
+3. 周期方法配置
 
 ```XML
 <beans>
@@ -736,17 +737,16 @@ public class BeanTwo {
 | singleton | 在 IOC 容器中，这个 bean 的对象始终为单实例 | IOC 容器初始化时 | 是     |
 | prototype | 这个 bean 在 IOC 容器中有多个实例           | 获取 bean 时     | 否     |
 
-
-        如果是在WebApplicationContext环境下还会有另外两个作用域（但不常用）：
+​    如果是在WebApplicationContext环境下还会有另外两个作用域（但不常用）：
 
 | 取值    | 含义                 | 创建对象的时机 | 默认值 |
 | ------- | -------------------- | -------------- | ------ |
 | request | 请求范围内有效的实例 | 每次请求       | 否     |
 | session | 会话范围内有效的实例 | 每次会话       | 否     |
 
-    3. 作用域配置
-    
-        配置scope范围
+3. 作用域配置
+
+    配置scope范围
 
 ```XML
 <!--bean的作用域 
@@ -762,7 +762,7 @@ public class BeanTwo {
     <property name="componentName" value="happyComponent"/>
 </bean>
 ```
-    4. 作用域测试
+4. 作用域测试
 
 ```Java
 @Test
@@ -841,7 +841,7 @@ public class HappyFactoryBean implements FactoryBean<HappyMachine> {
     }
 }
 ```
-    2. 配置FactoryBean实现类
+2. 配置FactoryBean实现类
 
 ```XML
 <!-- FactoryBean机制 -->
@@ -851,7 +851,7 @@ public class HappyFactoryBean implements FactoryBean<HappyMachine> {
     <property name="machineName" value="iceCreamMachine"/>
 </bean>
 ```
-    3. 测试读取FactoryBean和FactoryBean.getObject对象
+3. 测试读取FactoryBean和FactoryBean.getObject对象
 
 ```Java
 @Test
@@ -1143,7 +1143,7 @@ public class StudentDaoImpl implements StudentDao {
 }
 
 ```
-    2. 业务层
+2. 业务层
 
 ```Java
 //接口
@@ -1180,7 +1180,7 @@ public class StudentServiceImpl  implements StudentService {
 }
 
 ```
-    3. 表述层
+3. 表述层
 
 ```Java
 public class StudentController {
@@ -1297,9 +1297,9 @@ public class ControllerTest {
     </dependency>
 </dependencies>
 ```
-    2. 准备组件类
-    
-        普通组件
+2. 准备组件类
+
+    普通组件
 
 ```Java
 /**
@@ -1312,7 +1312,7 @@ public class CommonComponent {
 
 ```
 
-        Controller组件
+​    Controller组件
 
 ```Java
 /**
@@ -1325,7 +1325,7 @@ public class XxxController {
 
 ```
 
-        Service组件
+​    Service组件
 
 ```Java
 /**
@@ -1338,7 +1338,7 @@ public class XxxService {
 
 ```
 
-        Dao组件
+​    Dao组件
 
 ```Java
 /**
@@ -1362,15 +1362,14 @@ public class XxxDao {
 | @Service    | 该注解通常作用在业务层（Service 层），用于将业务层的类标识为 Spring 中的 Bean，其功能与 @Component 相同。 |
 | @Controller | 该注解通常作用在控制层（如SpringMVC 的 Controller），用于将控制层的类标识为 Spring 中的 Bean，其功能与 @Component 相同。 |
 
+​    通过查看源码我们得知，@Controller、@Service、@Repository这三个注解只是在@Component注解的基础上起了三个新的名字。
 
-        通过查看源码我们得知，@Controller、@Service、@Repository这三个注解只是在@Component注解的基础上起了三个新的名字。
-    
-        对于Spring使用IOC容器管理这些组件来说没有区别，也就是语法层面没有区别。所以@Controller、@Service、@Repository这三个注解只是给开发人员看的，让我们能够便于分辨组件的作用。
-    
-        注意：虽然它们本质上一样，但是为了代码的可读性、程序结构严谨！我们肯定不能随便胡乱标记。
-    2. 使用注解标记
-    
-        普通组件
+​    对于Spring使用IOC容器管理这些组件来说没有区别，也就是语法层面没有区别。所以@Controller、@Service、@Repository这三个注解只是给开发人员看的，让我们能够便于分辨组件的作用。
+
+​    注意：虽然它们本质上一样，但是为了代码的可读性、程序结构严谨！我们肯定不能随便胡乱标记。
+2. 使用注解标记
+
+    普通组件
 
 ```Java
 /**
@@ -1384,7 +1383,7 @@ public class CommonComponent {
 
 ```
 
-        Controller组件
+​    Controller组件
 
 ```Java
 /**
@@ -1398,7 +1397,7 @@ public class XxxController {
 
 ```
 
-        Service组件
+​    Service组件
 
 ```Java
 /**
@@ -1412,7 +1411,7 @@ public class XxxService {
 
 ```
 
-        Dao组件
+​    Dao组件
 
 ```Java
 /**
@@ -1445,7 +1444,7 @@ public class XxxDao {
 </beans>
 ```
 
-    情况2：指定排除组件
+情况2：指定排除组件
 
 ```XML
 <!-- 情况三：指定不扫描的组件 -->
@@ -1458,7 +1457,7 @@ public class XxxDao {
 </context:component-scan>
 ```
 
-    情况3：指定扫描组件
+情况3：指定扫描组件
 
 ```XML
 <!-- 情况四：仅扫描指定的组件 -->
@@ -1486,7 +1485,7 @@ public class SoldierController {
 }
 ```
 
-    当注解中只设置一个属性时，value属性的属性名可以省略：
+当注解中只设置一个属性时，value属性的属性名可以省略：
 
 ```Java
 @Service("smallDog")
@@ -1543,8 +1542,7 @@ public class BeanTwo {
 | singleton | 在 IOC 容器中，这个 bean 的对象始终为单实例 | IOC 容器初始化时 | 是     |
 | prototype | 这个 bean 在 IOC 容器中有多个实例           | 获取 bean 时     | 否     |
 
-
-        如果是在WebApplicationContext环境下还会有另外两个作用域（但不常用）：
+​    如果是在WebApplicationContext环境下还会有另外两个作用域（但不常用）：
 
 | 取值    | 含义                 | 创建对象的时机 | 默认值 |
 | ------- | -------------------- | -------------- | ------ |
@@ -1590,7 +1588,7 @@ public class SoldierController {
 
 }
 ```
-    - SoldierService中声明方法
+- SoldierService中声明方法
 
 ```Java
 @Service("smallDog")
@@ -1603,7 +1601,7 @@ public class SoldierService {
     }
 }
 ```
-    - SoldierDao中声明方法
+- SoldierDao中声明方法
 
 ```Java
 @Repository
@@ -1639,7 +1637,7 @@ public class SoldierController {
     
 }
 ```
-    4. 给Service装配Dao
+4. 给Service装配Dao
 
 ```Java
 @Service("smallDog")
@@ -1673,7 +1671,7 @@ public class SoldierService {
     }
 }
 ```
-        2. 构造器
+​    2. 构造器
 
 ```Java
 @Controller(value = "tianDog")
@@ -1687,7 +1685,7 @@ public class SoldierController {
     }
     ……
 ```
-        3. setXxx()方法
+​    3. setXxx()方法
 
 ```Java
 @Controller(value = "tianDog")
@@ -1786,7 +1784,7 @@ public class SoldierController {
     <version>2.1.1</version>
 </dependency>
 ```
-    - @Resource使用
+- @Resource使用
 
 ```Java
 @Controller
@@ -1817,13 +1815,13 @@ public class XxxController {
 
 application.properties
 
-```Java
+```properties
 catalog.name=MovieCatalog
 ```
 
 **xml引入外部配置**
 
-```Java
+```xml
 <!-- 引入外部配置文件-->
 <context:property-placeholder location="application.properties" />
 ```
@@ -2235,13 +2233,13 @@ iocContainerAnnotation.refresh();
 
   **总结：**
 
-    @Configuration指定一个类为配置类，可以添加配置注解，替代配置xml文件
-    
-    @ComponentScan(basePackages = {"包","包"}) 替代<context:component-scan标签实现注解扫描
-    
-    @PropertySource("classpath:配置文件地址") 替代 <context:property-placeholder标签
-    
-    配合IoC/DI注解，可以进行完整注解开发！
+@Configuration指定一个类为配置类，可以添加配置注解，替代配置xml文件
+
+@ComponentScan(basePackages = {"包","包"}) 替代<context:component-scan标签实现注解扫描
+
+@PropertySource("classpath:配置文件地址") 替代 <context:property-placeholder标签
+
+配合IoC/DI注解，可以进行完整注解开发！
 
 ### 4.4.3 @Bean定义组件
 
@@ -2332,7 +2330,7 @@ public @interface Bean {
 
 ```
 
-    指定@Bean的名称：
+指定@Bean的名称：
 
 ```Java
 @Configuration
@@ -2345,7 +2343,7 @@ public class AppConfig {
 }
 ```
 
-    `@Bean` 注释注释方法。使用此方法在指定为方法返回值的类型的 `ApplicationContext` 中注册 Bean 定义。缺省情况下，Bean 名称与方法名称相同。下面的示例演示 `@Bean` 方法声明：
+`@Bean` 注释注释方法。使用此方法在指定为方法返回值的类型的 `ApplicationContext` 中注册 Bean 定义。缺省情况下，Bean 名称与方法名称相同。下面的示例演示 `@Bean` 方法声明：
 
 ```Java
 @Configuration
@@ -2358,7 +2356,7 @@ public class AppConfig {
 }
 ```
 
-    前面的配置完全等同于下面的Spring XML：
+前面的配置完全等同于下面的Spring XML：
 
 ```Java
 <beans>
@@ -2404,7 +2402,7 @@ public class AppConfig {
 
     默认作用域为 `singleton` ，但您可以使用 `@Scope` 注释覆盖此范围，如以下示例所示：
 
-```Java
+```java
 @Configuration
 public class MyConfiguration {
 
@@ -2415,6 +2413,7 @@ public class MyConfiguration {
   }
 }
 ```
+
 4. **@Bean方法之间依赖**
 
     **准备组件**
@@ -2454,11 +2453,11 @@ public class HappyComponent {
 }
 ```
 
-    **Java配置类实现：**
-    
-    方案1：
-    
-    直接调用方法返回 Bean 实例：在一个 `@Bean` 方法中直接调用其他 `@Bean` 方法来获取 Bean 实例，虽然是方法调用，也是通过IoC容器获取对应的Bean，例如：
+**Java配置类实现：**
+
+方案1：
+
+直接调用方法返回 Bean 实例：在一个 `@Bean` 方法中直接调用其他 `@Bean` 方法来获取 Bean 实例，虽然是方法调用，也是通过IoC容器获取对应的Bean，例如：
 
 ```Java
 @Configuration
@@ -2480,9 +2479,9 @@ public class JavaConfig {
 }
 ```
 
-    方案2：
-    
-    参数引用法：通过方法参数传递 Bean 实例的引用来解决 Bean 实例之间的依赖关系，例如：
+方案2：
+
+参数引用法：通过方法参数传递 Bean 实例的引用来解决 Bean 实例之间的依赖关系，例如：
 
 ```Java
 package com.atguigu.config;
@@ -3637,47 +3636,42 @@ public void printLogAfterCoreException(JoinPoint joinPoint, Throwable targetMeth
 ```Java
 public private 直接描述对应修饰符即可
 ```
-    - 第三位：方法返回值
+- 第三位：方法返回值
 
 ```Java
 int String void 直接描述返回值类型
 
 ```
 
-        注意：
-    
-        特殊情况 不考虑 访问修饰符和返回值
-    
-          execution(* * ) 这是错误语法
-    
-          execution(*) == 你只要考虑返回值 或者 不考虑访问修饰符 相当于全部不考虑了
-    - 第四位：指定包的地址
+​    注意：
 
-```Java
+​    特殊情况 不考虑 访问修饰符和返回值
+
+​      execution(* * ) 这是错误语法
+
+​      execution(*) == 你只要考虑返回值 或者 不考虑访问修饰符 相当于全部不考虑了
+- 第四位：指定包的地址
+
  固定的包: com.atguigu.api | service | dao
  单层的任意命名: com.atguigu.*  = com.atguigu.api  com.atguigu.dao  * = 任意一层的任意命名
  任意层任意命名: com.. = com.atguigu.api.erdaye com.a.a.a.a.a.a.a  ..任意层,任意命名 用在包上!
  注意: ..不能用作包开头   public int .. 错误语法  com..
  找到任何包下: *..
-```
-    - 第五位：指定类名称
 
-```Java
+- 第五位：指定类名称
+
 固定名称: UserService
 任意类名: *
 部分任意: com..service.impl.*Impl
 任意包任意类: *..*
 
-```
-    - 第六位：指定方法名称
+- 第六位：指定方法名称
 
-```Java
 语法和类名一致
 任意访问修饰符,任意类的任意方法: * *..*.*
-```
-    - 第七位：方法参数
 
-```Java
+- 第七位：方法参数
+
 第七位: 方法的参数描述
        具体值: (String,int) != (int,String) 没有参数 ()
        模糊值: 任意参数 有 或者 没有 (..)  ..任意参数的意识
@@ -3686,7 +3680,7 @@ int String void 直接描述返回值类型
          最后一个参数是字符串 (..String)
          字符串开头,int结尾 (String..int)
          包含int类型(..int..)
-```
+
 3. **切点表达式案例**
 
 ```Java
@@ -3725,11 +3719,12 @@ public void printLogFinallyEnd() {
 }
 ```
 
-    上面案例，是我们之前编写切点表达式的方式，发现， 所有增强方法的切点表达式相同！
-    
-    出现了冗余，如果需要切换也不方便统一维护！
-    
-    我们可以将切点提取，在增强上进行引用即可！
+上面案例，是我们之前编写切点表达式的方式，发现， 所有增强方法的切点表达式相同！
+
+出现了冗余，如果需要切换也不方便统一维护！
+
+我们可以将切点提取，在增强上进行引用即可！
+
 2. 同一类内部引用
 
     提取
@@ -4762,9 +4757,10 @@ public class TxTest {
 
 ```
 
-      **注意：**
-    
-        在同一个类中，对于@Transactional注解的方法调用，事务传播行为不会生效。这是因为Spring框架中使用代理模式实现了事务机制，在同一个类中的方法调用并不经过代理，而是通过对象的方法调用，因此@Transactional注解的设置不会被代理捕获，也就不会产生任何事务传播行为的效果。
+  **注意：**
+
+​    在同一个类中，对于@Transactional注解的方法调用，事务传播行为不会生效。这是因为Spring框架中使用代理模式实现了事务机制，在同一个类中的方法调用并不经过代理，而是通过对象的方法调用，因此@Transactional注解的设置不会被代理捕获，也就不会产生任何事务传播行为的效果。
+
   4. 其他传播行为值（了解）
       1. Propagation.REQUIRED：如果当前存在事务，则加入当前事务，否则创建一个新事务。
       2. Propagation.REQUIRES_NEW：创建一个新事务，并在新事务中执行。如果当前存在事务，则挂起当前事务，即使新事务抛出异常，也不会影响当前事务。

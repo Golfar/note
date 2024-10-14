@@ -1377,7 +1377,7 @@ public class LogAdvice {
 
 `java -jar`命令用于在Java环境中执行可执行的JAR文件。下面是关于`java -jar`命令的说明：
 
-```XML
+```shell
 命令格式：java -jar  [选项] [参数] <jar文件名>
 ```
 

@@ -3055,7 +3055,7 @@ public class LinkedHashSet<E>
 
 - 继承自HashSet
 - 底层为LinkedHashMap，维护的是数组加双向链表
-- 通过双向链表维护元素次
+- 通过双向链表维护元素次序
 - 不允许添加重复元素
 
 ####  源码

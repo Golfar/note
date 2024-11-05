@@ -1,22 +1,25 @@
 # 第一章 Java并发编程基础
 
-## 1.1线程简介
+## 1.1 线程简介
 
 **使用JMX输出线程信息**
 
 ~~~java
 //使用JMX输出线程信息
 public static void main(String[] args) {
+    // 获取Java线程管理MXBean
     ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+    // 不需要获取同步的 monitor 和 synchronizer 信息，仅获取线程和线程的堆栈信息
     ThreadInfo[] threadInfos = threadMXBean.dumpAllThreads(false, false);
+    // 遍历线程信息，仅打印线程 ID 和线程名称信息
     for (ThreadInfo threadInfo : threadInfos) {
         System.out.println("threadInfo = " + threadInfo.getThreadId() + "  .." + threadInfo.getThreadName());
     }
 }
-//threadInfo = 1  ..main
-//threadInfo = 2  ..Reference Handler
-//threadInfo = 3  ..Finalizer
-//threadInfo = 4  ..Signal Dispatcher
+//threadInfo = 1  ..main				   main线程，用户程序入口
+//threadInfo = 2  ..Reference Handler		清理Reference的线程
+//threadInfo = 3  ..Finalizer			    调用对象 finalize 方法的线程
+//threadInfo = 4  ..Signal Dispatcher		分发和管理JVM信号的线程
 //threadInfo = 5  ..Attach Listener
 //threadInfo = 21  ..Common-Cleaner
 //threadInfo = 22  ..Monitor Ctrl-Break
@@ -265,13 +268,14 @@ Daemon线程是一种支持型线程，主要被用作程序中的后台调度�
 
 Daemon线程中的`finally`代码块不一定会执行，因为当虚拟机中只有Daemon线程时，虚拟机会退出
 
-## 1.2启动和终止线程
+## 1.2 启动和终止线程
 
-### 1.2.1创建线程
+### 1.2.1 创建线程
 
 线程对象在构造时需要提供线程所需要的属性
 
 ```java
+// java.lang.Thread中对线程初始化的部分
 private Thread(ThreadGroup g, Runnable target, String name,
                    long stackSize, AccessControlContext acc,
                    boolean inheritThreadLocals) {
@@ -283,7 +287,6 @@ private Thread(ThreadGroup g, Runnable target, String name,
 		
     	//当前线程就是该线程的父线程
         Thread parent = currentThread();
-
 		
         this.group = g;
         this.daemon = parent.isDaemon();
@@ -304,6 +307,13 @@ private Thread(ThreadGroup g, Runnable target, String name,
     }
 ```
 
-### 1.2.2启动线程
+子线程会继承父线程的优先级、`Daemon`、加载资源的`contextClassLoader`以及可继承的`ThreadLocal`，同时还会分配一个唯一ID来标识这个子线程
+
+### 1.2.2 启动线程
 
 `start()`方法启动线程，含义是：**当前线程（即父线程）同步告知Java虚拟机，只要线程规划期空闲，应立即启动调用start()方法的线程**
+
+### 1.2.3 理解中断
+
+其他线程通过调用该线程的`interrupt()`方法对其进行中断操作
+
